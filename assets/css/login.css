@@ -20,7 +20,7 @@
     --font: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; scroll-behavior: smooth; }
+html { font-size: 16px; scroll-behavior: smooth; height: 100%; overflow: hidden; }
 body {
     font-family: var(--font);
     font-size: 1rem;
@@ -28,12 +28,15 @@ body {
     color: var(--text);
     background: var(--bg);
     -webkit-font-smoothing: antialiased;
+    height: 100%;
+    overflow: hidden;
 }
 
-/* Layout */
+/* Layout - desktop: fixed full-height split, no page scroll */
 .auth-container {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
 
 /* ===== Branding / Identity Panel ===== */
@@ -139,6 +142,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 2.5rem;
+    overflow-y: auto;
 }
 .form-panel {
     width: 100%;

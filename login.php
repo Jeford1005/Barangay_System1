@@ -274,15 +274,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             });
         });
 
-        // Show/hide password toggles
-        document.querySelectorAll('.toggle-password').forEach(t => {
-            t.addEventListener('click', function() {
-                const inp = this.previousElementSibling;
-                if (inp.type === 'password') { inp.type = 'text'; this.querySelector('i').classList.replace('fa-eye','fa-eye-slash'); }
-                else { inp.type = 'password'; this.querySelector('i').classList.replace('fa-eye-slash','fa-eye'); }
-            });
-        });
-
+        // Password show/hide is handled by assets/js/main.js (initPasswordToggles)
         // Forgot
         const forgotBtn = document.getElementById('showForgotBtn');
         const forgotOverlay = document.getElementById('forgotOverlay');
