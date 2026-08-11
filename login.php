@@ -275,13 +275,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             min-height: 48px;
         }
         @media (max-width: 1024px) {
+            html, body {
+                overflow: auto !important;
+                height: auto !important;
+            }
             .auth-container {
+                display: block;
                 height: auto;
                 min-height: 100vh;
+                overflow: visible;
             }
             .auth-left, .auth-right {
                 height: auto;
+                min-height: auto;
+                display: block;
                 justify-content: flex-start;
+                align-items: stretch;
+            }
+            .form-panel {
+                margin: 0 auto;
             }
         }
     </style>
