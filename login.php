@@ -274,6 +274,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         .role-btn {
             min-height: 48px;
         }
+        @media (max-width: 1024px) {
+            .auth-container {
+                height: auto;
+                min-height: 100vh;
+            }
+            .auth-left, .auth-right {
+                height: auto;
+                justify-content: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
