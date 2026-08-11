@@ -316,8 +316,14 @@ function log_audit($action, $entityType = null, $entityId = null, $oldValues = n
 // BASE PATH FOR REDIRECTS
 // ============================================================
 // Localhost serves from /BARANGAY_MANAGEMENT subfolder.
-// Vercel & Railway serve from root, so set BASE_PATH='' as an env var there.
-define('BASE_URL', rtrim(getenv('BASE_PATH') ?: '/BARANGAY_MANAGEMENT', '/'));
+// Vercel & Railway serve from root: set BASE_PATH='/' (or '') as an env var there.
+$basePath = getenv('BASE_PATH');
+if ($basePath === false || $basePath === '' || $basePath === '/') {
+    $basePath = '';
+} else {
+    $basePath = rtrim($basePath, '/');
+}
+define('BASE_URL', $basePath);
 define('ADMIN_EMAIL', 'noreply@bidduang.gov.ph');
 define('APP_NAME', 'Barangay Bidduang Management Portal');
 define('UPLOAD_PATH', __DIR__ . '/uploads');
