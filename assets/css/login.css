@@ -162,6 +162,7 @@ body {
 
 /* Role switcher */
 .role-switcher {
+    position: relative;
     display: flex;
     gap: .4rem;
     background: var(--primary-soft);
@@ -170,6 +171,8 @@ body {
     margin-bottom: 1.5rem;
 }
 .role-btn {
+    position: relative;
+    z-index: 1;
     flex: 1;
     display: flex;
     align-items: center;
@@ -183,12 +186,20 @@ body {
     padding: .7rem;
     border-radius: 10px;
     cursor: pointer;
-    transition: all .2s ease;
+    transition: color .25s ease;
 }
 .role-btn.active {
     background: var(--primary);
     color: #fff;
     box-shadow: var(--shadow);
+}
+.role-slider { display: none; }
+.form-panel.switching { animation: none; }
+
+/* Form switch animation (mobile only) */
+@keyframes formSwitchIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Form fields */
@@ -387,6 +398,23 @@ body {
     .brand-content h1 { font-size: 1.5rem; }
     .brand-content .brand-sub { font-size: .9rem; }
     .feature-grid { max-width: 420px; margin: 1rem 0; }
+    /* Mobile-only role switch animation */
+    .role-slider {
+        display: block;
+        position: absolute;
+        z-index: 0;
+        top: .35rem;
+        bottom: .35rem;
+        left: .35rem;
+        width: calc(50% - .4rem);
+        background: var(--primary);
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+        transition: transform .3s cubic-bezier(.4,0,.2,1);
+    }
+    .role-slider.right { transform: translateX(100%); }
+    .role-btn.active { background: transparent; box-shadow: none; }
+    .form-panel.switching { animation: formSwitchIn .35s ease; }
 }
 @media (max-width: 640px) {
     html { font-size: 15px; }

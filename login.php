@@ -457,14 +457,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         const roleAdmin = document.getElementById('roleAdmin');
         const roleResident = document.getElementById('roleResident');
         const loginRoleInput = document.getElementById('loginRoleInput');
+        const loginUsername = document.getElementById('loginUsername');
+        const roleSwitcher = document.querySelector('.role-switcher');
+        const formPanel = document.getElementById('loginPanel');
+        let slider = null;
+        if (roleSwitcher) {
+            slider = document.createElement('span');
+            slider.className = 'role-slider';
+            roleSwitcher.appendChild(slider);
+        }
+        const roleLabels = { administrator: 'Admin', resident: 'Resident' };
+        function applyRole(role, animate) {
+            if (roleAdmin) roleAdmin.classList.toggle('active', role === 'administrator');
+            if (roleResident) roleResident.classList.toggle('active', role === 'resident');
+            if (loginRoleInput) loginRoleInput.value = role;
+            if (slider) slider.classList.toggle('right', role === 'resident');
+            if (loginUsername) loginUsername.placeholder = 'Enter ' + (roleLabels[role] || '') + ' username or email';
+            if (animate && formPanel) {
+                formPanel.classList.remove('switching');
+                void formPanel.offsetWidth;
+                formPanel.classList.add('switching');
+            }
+        }
         [roleAdmin, roleResident].forEach(btn => {
             if (btn) btn.addEventListener('click', function() {
-                roleAdmin.classList.remove('active');
-                roleResident.classList.remove('active');
-                this.classList.add('active');
-                loginRoleInput.value = this.dataset.role;
+                applyRole(this.dataset.role, true);
             });
         });
+        applyRole('administrator', false);
 
         // Forgot
         const forgotBtn = document.getElementById('showForgotBtn');
