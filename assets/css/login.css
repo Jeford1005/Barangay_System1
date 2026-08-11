@@ -141,7 +141,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2.5rem;
+    padding: 4rem 2.5rem;
     overflow-y: auto;
 }
 .form-panel {
@@ -379,7 +379,8 @@ body {
 
 /* ===== Responsive ===== */
 @media (max-width: 1024px) {
-    .auth-container { flex-direction: column; }
+    html, body { height: auto; overflow: auto; }
+    .auth-container { flex-direction: column; height: auto; min-height: 100vh; overflow: visible; }
     .auth-left { flex: none; padding: 1.5rem 1.25rem 1.25rem; }
     .auth-right { flex: none; padding: 1.5rem 1.25rem 2rem; }
     .seal-circle { width: 84px; height: 84px; margin-bottom: .75rem; }
