@@ -315,11 +315,13 @@ function log_audit($action, $entityType = null, $entityId = null, $oldValues = n
 // ============================================================
 // BASE PATH FOR REDIRECTS
 // ============================================================
-// Localhost serves from /BARANGAY_MANAGEMENT subfolder.
+// Localhost serves from /BARANGAY_MANAGEMENT subfolder (default).
 // Vercel & Railway serve from root: set BASE_PATH='/' (or '') as an env var there.
 $basePath = getenv('BASE_PATH');
-if ($basePath === false || $basePath === '' || $basePath === '/') {
+if ($basePath !== false && ($basePath === '' || $basePath === '/')) {
     $basePath = '';
+} elseif ($basePath === false) {
+    $basePath = '/BARANGAY_MANAGEMENT';
 } else {
     $basePath = rtrim($basePath, '/');
 }
