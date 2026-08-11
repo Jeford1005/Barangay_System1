@@ -1850,3 +1850,69 @@ th {
 .chip-4ps    input:checked + .chip-box { background: linear-gradient(135deg,#8b5cf6,#7c3aed); }
 .chip-4ps    input:checked + .chip-box .chip-check { background: #fff; color: #7c3aed !important; }
 .chip-4ps    .chip-box i:not(.chip-check) { color: #7c3aed; }
+
+/* ============================================================
+   MOBILE LAYOUT (sidebar -> horizontal top bar, content stacks)
+   ============================================================ */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        inset: 0 0 auto 0;
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        z-index: 100;
+        box-shadow: 0 2px 14px rgba(0,0,0,.28);
+    }
+    .sidebar-brand {
+        padding: .55rem .75rem;
+        border-bottom: none;
+        background: none;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        flex-shrink: 0;
+    }
+    .sidebar-brand img {
+        width: 38px;
+        height: 38px;
+        margin: 0;
+    }
+    .brand-title { font-size: .95rem; line-height: 1.1; }
+    .brand-sub { display: none; }
+    .sidebar > nav {
+        flex: 1 1 auto;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+    .sidebar-nav {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        padding: .4rem .5rem;
+        gap: .25rem;
+    }
+    .sidebar-nav li a {
+        padding: .5rem .7rem;
+        white-space: nowrap;
+    }
+    .sidebar-nav li a.active::before { display: none; }
+    .main-content {
+        margin-left: 0;
+        padding-top: 60px;
+    }
+    .content-wrap { padding: 1rem .9rem 0; }
+    .metrics-grid { grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .charts-grid { grid-template-columns: 1fr; }
+    .page-title { font-size: 1.35rem; }
+    .dashboard-header { flex-direction: column; align-items: flex-start; gap: .5rem; }
+}
+
+@media (max-width: 480px) {
+    .metrics-grid { grid-template-columns: 1fr; }
+    .brand-title { display: none; }
+    .sidebar-brand { padding: .5rem; }
+    .sidebar-brand img { width: 32px; height: 32px; }
+    .sidebar-nav li a { padding: .45rem .6rem; font-size: .85rem; }
+}
