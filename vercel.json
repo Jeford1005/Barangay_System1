@@ -1,11 +1,22 @@
 {
   "version": 2,
   "builds": [
-    { "src": "*.php", "use": "vercel-php@0.9.0" },
-    { "src": "api/*.php", "use": "vercel-php@0.9.0" }
+    { "src": "index.php", "use": "vercel-php@0.9.0" },
+    { "src": "login.php", "use": "vercel-php@0.9.0" },
+    { "src": "dashboard.php", "use": "vercel-php@0.9.0" },
+    { "src": "residents.php", "use": "vercel-php@0.9.0" },
+    { "src": "households.php", "use": "vercel-php@0.9.0" },
+    { "src": "officials.php", "use": "vercel-php@0.9.0" },
+    { "src": "documents.php", "use": "vercel-php@0.9.0" },
+    { "src": "blotter.php", "use": "vercel-php@0.9.0" },
+    { "src": "welfare.php", "use": "vercel-php@0.9.0" },
+    { "src": "reports.php", "use": "vercel-php@0.9.0" },
+    { "src": "accounts.php", "use": "vercel-php@0.9.0" },
+    { "src": "register.php", "use": "vercel-php@0.9.0" }
   ],
   "routes": [
-    { "src": "/", "dest": "/index.php" },
-    { "src": "/(.*)", "dest": "/$1" }
+    { "src": "/(2fa-verify|admin-audit|broadcast|logout|resident-dashboard|reset-password)\\.php", "dest": "/login.php", "status": 302 },
+    { "src": "/api/(.*)", "dest": "/api/$1.php" },
+    { "src": "/(.*)", "dest": "/$1.php" }
   ]
 }
