@@ -28,37 +28,8 @@ if (!is_dir(__DIR__ . '/logs')) {
 }
 
 // ============================================================
-// SESSION SECURITY CONFIGURATION
+// SESSION SETUP (moved below DB connection - uses DB-backed handler)
 // ============================================================
-if (session_status() === PHP_SESSION_NONE) {
-    // Set secure session cookie parameters BEFORE session_start()
-    $cookieParams = session_get_cookie_params();
-    
-    session_set_cookie_params([
-        'lifetime' => $cookieParams['lifetime'] ?? 0,
-        'path'     => $cookieParams['path'] ?? '/',
-        'domain'   => $cookieParams['domain'] ?? '',
-        'secure'   => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
-        'httponly' => true,
-        'samesite' => 'Strict'
-    ]);
-    
-    session_start();
-    
-    // Regenerate session ID periodically to prevent fixation
-    if (!isset($_SESSION['created'])) {
-        $_SESSION['created'] = time();
-    } elseif (time() - $_SESSION['created'] > 1800) {
-        // Regenerate every 30 minutes
-        session_regenerate_id(true);
-        $_SESSION['created'] = time();
-    }
-    
-    // Prevent session hijacking: store User-Agent hash
-    if (!isset($_SESSION['ua_hash'])) {
-        $_SESSION['ua_hash'] = hash('sha256', $_SERVER['HTTP_USER_AGENT'] ?? '');
-    }
-}
 
 // ============================================================
 // DATABASE CONNECTION (XAMPP / Railway Ready)
@@ -117,6 +88,67 @@ try {
             <p style="font-size: 18px; color: #2c3e50;">The database connection failed. Please contact the system administrator.</p>
             <p style="font-size: 14px; color: #7f8c8d;">Error Code: DB_CONN_FAILED</p>
          </div>');
+}
+
+// ============================================================
+// DATABASE-BACKED SESSION HANDLER
+// Required so sessions persist across Vercel's ephemeral serverless
+// invocations (default /tmp file handler is not shared between lambdas).
+// Works identically on Railway (FrankenPHP) and localhost (XAMPP).
+// ============================================================
+class DatabaseSessionHandler implements SessionHandlerInterface {
+    private $pdo;
+    public function __construct($pdo) { $this->pdo = $pdo; }
+    public function open($path, $name) { return true; }
+    public function close() { return true; }
+    public function read($id) {
+        $stmt = $this->pdo->prepare("SELECT data FROM sessions WHERE id = ?");
+        $stmt->execute([$id]);
+        $row = $stmt->fetchColumn();
+        return $row === false ? '' : $row;
+    }
+    public function write($id, $data) {
+        $stmt = $this->pdo->prepare("REPLACE INTO sessions (id, data, last_activity) VALUES (?, ?, ?)");
+        $stmt->execute([$id, $data, time()]);
+        return true;
+    }
+    public function destroy($id) {
+        $this->pdo->prepare("DELETE FROM sessions WHERE id = ?")->execute([$id]);
+        return true;
+    }
+    public function gc($max_lifetime) {
+        $this->pdo->prepare("DELETE FROM sessions WHERE last_activity < ?")->execute([time() - $max_lifetime]);
+        return true;
+    }
+}
+
+session_set_save_handler(new DatabaseSessionHandler($pdo), true);
+
+// Secure session cookie parameters
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path'     => '/',
+    'domain'   => '',
+    'secure'   => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+
+    // Regenerate session ID periodically to prevent fixation
+    if (!isset($_SESSION['created'])) {
+        $_SESSION['created'] = time();
+    } elseif (time() - $_SESSION['created'] > 1800) {
+        session_regenerate_id(true);
+        $_SESSION['created'] = time();
+    }
+
+    // Prevent session hijacking: store User-Agent hash
+    if (!isset($_SESSION['ua_hash'])) {
+        $_SESSION['ua_hash'] = hash('sha256', $_SERVER['HTTP_USER_AGENT'] ?? '');
+    }
 }
 
 // ============================================================
