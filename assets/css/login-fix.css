@@ -1,0 +1,223 @@
+@media (max-width: 1024px) {
+    .auth-container {
+        flex-direction: column;
+    }
+
+    .auth-left {
+        flex: none;
+        padding: 1.5rem;
+        min-height: auto;
+    }
+
+    .seal-circle {
+        width: 100px;
+        height: 100px;
+        font-size: 2.5rem;
+    }
+
+    .brand-content h1 {
+        font-size: 1.5rem;
+    }
+
+    .brand-content p {
+        font-size: 1rem;
+    }
+
+    .brand-icons {
+        font-size: 1.25rem;
+        gap: 1rem;
+    }
+
+    .auth-right {
+        flex: none;
+        min-height: auto;
+        padding: 1.5rem;
+    }
+
+    .form-panel {
+        max-width: 100%;
+    }
+
+    .register-overlay {
+        max-width: 100%;
+    }
+}
+
+/* Mobile devices */
+@media (max-width: 640px) {
+    html {
+        font-size: 15px;
+    }
+
+    body {
+        font-size: 1rem;
+    }
+
+    .auth-container {
+        flex-direction: column;
+    }
+
+    .auth-left {
+        padding: 1.25rem;
+        text-align: center;
+    }
+
+    .seal-circle {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+    }
+
+    .brand-content h1 {
+        font-size: 1.375rem;
+    }
+
+    .brand-content p {
+        font-size: 0.9375rem;
+    }
+
+    .brand-icons {
+        display: none;
+    }
+
+    .auth-right {
+        padding: 1.25rem;
+    }
+
+    .form-panel {
+        padding: 1rem;
+    }
+
+    .form-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .role-switcher {
+        flex-direction: column;
+        gap: 0.375rem;
+    }
+
+    .role-btn {
+        width: 100%;
+        padding: 0.875rem;
+    }
+
+    .form-group input {
+        font-size: 1rem;
+        padding: 0.875rem 1rem;
+    }
+
+    .btn-submit {
+        font-size: 1.0625rem;
+        padding: 0.875rem;
+    }
+
+    .register-overlay {
+        max-width: 100%;
+    }
+
+    .register-panel {
+        padding: 1.5rem;
+    }
+
+    .register-header h2 {
+        font-size: 1.375rem;
+    }
+
+    .close-register {
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+}
+
+/* Small phones */
+@media (max-width: 380px) {
+    html {
+        font-size: 14px;
+    }
+
+    .auth-left {
+        padding: 1rem;
+    }
+
+    .seal-circle {
+        width: 64px;
+        height: 64px;
+        font-size: 1.75rem;
+    }
+
+    .auth-right {
+        padding: 1rem;
+    }
+
+    .form-panel {
+        padding: 0.875rem;
+    }
+}
+
+/* Landscape mode on small devices */
+@media (max-height: 600px) and (orientation: landscape) {
+    .auth-left {
+        padding: 1rem;
+    }
+
+    .seal-circle {
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
+    }
+
+    .brand-content {
+        margin-bottom: 0.5rem;
+    }
+
+    .brand-content h1 {
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .brand-content p {
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-right {
+        padding: 1rem;
+    }
+
+    .form-header {
+        margin-bottom: 0.75rem;
+    }
+
+    .form-group {
+        margin-bottom: 0.75rem;
+    }
+
+    .form-footer {
+        margin-top: 0.75rem;
+    }
+}
+
+/* Large screens */
+@media (min-width: 1400px) {
+    .auth-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .form-panel {
+        max-width: 480px;
+    }
+}
+
+/* High contrast mode support */
+@media (forced-colors: active) {
+    .auth-left {
+        border: 2px solid ButtonText;
+    }
+
+    .btn-submit,
+    .role-btn.active {
+        border: 2px solid ButtonText;
+    }
+}
