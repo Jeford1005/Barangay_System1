@@ -206,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <title>Sign In - Barangay Bidduang</title>
     <link rel="shortcut icon" type="image/png" href="assets/img/Brgy_Bidduang.png">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
-    <link rel="stylesheet" href="assets/css/login.css?v=<?= filemtime(__DIR__ . '/assets/css/login.css') ?>">
+    <link rel="stylesheet" href="assets/css/login.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
     <style>
         .auth-container { min-height: 100vh; display: flex; }

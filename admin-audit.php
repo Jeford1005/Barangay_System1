@@ -41,7 +41,7 @@ $sidebar = [
     <link rel="shortcut icon" type="image/png" href="assets/img/Brgy_Bidduang.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audit Logs - Barangay Bidduang Portal</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= filemtime(__DIR__ . '/assets/css/dashboard.css') ?>">
+    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
     <style>
         .audit-filters {

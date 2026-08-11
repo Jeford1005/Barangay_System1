@@ -60,8 +60,8 @@ try {
     <link rel="shortcut icon" type="image/png" href="assets/img/Brgy_Bidduang.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Broadcast Manager - Barangay Bidduang Portal</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= filemtime(__DIR__ . '/assets/css/dashboard.css') ?>">
-    <link rel="stylesheet" href="assets/css/fontawesome.min.css?v=<?= filemtime(__DIR__ . '/assets/css/fontawesome.min.css') ?>">
+    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/fontawesome.min.css?v=<?= ASSET_VERSION ?>">
     <style>
         .broadcast-manager { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
         .category-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
