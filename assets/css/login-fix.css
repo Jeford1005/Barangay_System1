@@ -221,3 +221,19 @@
         border: 2px solid ButtonText;
     }
 }
+
+/* Prevent content clipping on short/mobile viewports */
+@media (max-width: 1024px) {
+    .auth-container {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+    .auth-left,
+    .auth-right {
+        overflow: visible;
+    }
+    body {
+        overflow-x: hidden;
+    }
+}
