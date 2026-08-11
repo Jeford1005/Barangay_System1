@@ -164,6 +164,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         if ($contactMethod === 'sms' && !empty($user['phone_number'])) {
             $resetCode = substr($resetToken, 0, 6);
             $pdo->prepare("UPDATE users SET reset_code = ?, reset_code_expiry = ? WHERE id = ?")->execute([$resetCode, $resetExpiry, $user['id']]);
+
+            require_once __DIR__ . '/lib/sms/SmsTriggers.php';
+            require_once __DIR__ . '/lib/sms/SmsLogger.php';
+            require_once __DIR__ . '/lib/sms/SmsService.php';
+            require_once __DIR__ . '/lib/sms/SemaphoreSmsProvider.php';
+            try {
+                SmsTriggers::sendNow(
+                    $user['phone_number'],
+                    'PasswordReset',
+                    "Your Barangay Bidduang password reset code is: $resetCode. Expires in 1 hour."
+                );
+            } catch (Throwable $e) {
+                error_log('SMS reset code failed: ' . $e->getMessage());
+            }
         }
         
         log_audit('password_reset_request', 'user', $user['id'], null, ['method' => $contactMethod]);
