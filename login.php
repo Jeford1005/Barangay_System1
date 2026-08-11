@@ -1,9 +1,187 @@
 <?php
 require_once __DIR__ . '/config.php';
+redirect_if_authenticated();
 $csrf_token = generate_csrf_token();
-$page_error = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    // (handled clientside; server stub kept minimal)
+
+// Handle AJAX login submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+    header('Content-Type: application/json');
+    
+    $response = ['status' => 'error', 'message' => 'Invalid request.'];
+    
+    try {
+        $inputRole = $_POST['role'] ?? 'administrator';
+        $inputUsername = trim($_POST['username'] ?? '');
+        $inputPassword = $_POST['password'] ?? '';
+        $postCsrf = $_POST['csrf_token'] ?? '';
+        
+        if (!verify_csrf_token($postCsrf)) {
+            $response['message'] = 'Invalid security token. Please refresh and try again.';
+            echo json_encode($response);
+            exit;
+        }
+        
+        if (empty($inputUsername) || empty($inputPassword)) {
+            $response['message'] = 'Please enter both username and password.';
+            echo json_encode($response);
+            exit;
+        }
+        
+        $stmt = $pdo->prepare("
+            SELECT id, username, email, password, full_name, role, status, twofa_secret, resident_id
+            FROM users
+            WHERE (username = :username OR email = :email)
+            AND status = 'active'
+            LIMIT 1
+        ");
+        $stmt->execute([':username' => $inputUsername, ':email' => $inputUsername]);
+        $user = $stmt->fetch();
+        
+        if (!$user || !password_verify($inputPassword, $user['password'])) {
+            log_audit('login_failed', 'Auth', null, null, ['username' => $inputUsername, 'role' => $inputRole]);
+            $response['message'] = 'Invalid username or password. Please try again.';
+            echo json_encode($response);
+            exit;
+        }
+        
+        $roleMap = [
+            'administrator' => ['admin', 'staff'],
+            'resident' => ['resident']
+        ];
+        $allowedRoles = $roleMap[$inputRole] ?? [];
+        
+        if (!in_array($user['role'], $allowedRoles)) {
+            $roleLabels = [
+                'administrator' => 'Administrator/Staff',
+                'resident' => 'Resident'
+            ];
+            $response['message'] = 'Access denied. This account is not authorized for ' . ($roleLabels[$inputRole] ?? $inputRole) . ' access.';
+            echo json_encode($response);
+            exit;
+        }
+        
+        if (!empty($user['twofa_secret'])) {
+            $_SESSION['pending_2fa_user_id'] = $user['id'];
+            $_SESSION['pending_2fa_role'] = $user['role'];
+            $_SESSION['pending_2fa_full_name'] = $user['full_name'];
+            echo json_encode([
+                'status' => '2fa_required',
+                'message' => 'Two-factor authentication required.',
+                'redirect' => BASE_URL . '/2fa-verify.php'
+            ]);
+            exit;
+        }
+        
+        secure_session_regenerate();
+        
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['email'] = $user['email'];
+        $_SESSION['full_name'] = $user['full_name'];
+        $_SESSION['user_role'] = $user['role'];
+        $_SESSION['ua_hash'] = hash('sha256', $_SERVER['HTTP_USER_AGENT'] ?? '');
+        $_SESSION['logged_in'] = true;
+        $_SESSION['last_activity'] = time();
+        
+        $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = :id")->execute([':id' => $user['id']]);
+        log_audit('login', 'user', $user['id']);
+        
+        $redirectUrl = ($user['role'] === 'admin' || $user['role'] === 'staff')
+            ? BASE_URL . '/dashboard.php'
+            : BASE_URL . '/resident-dashboard.php';
+        
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Login successful! Redirecting...',
+            'redirect' => $redirectUrl
+        ]);
+        exit;
+    } catch (Exception $e) {
+        error_log('Login Error: ' . $e->getMessage());
+        $response['message'] = 'An error occurred. Please try again later.';
+        echo json_encode($response);
+        exit;
+    }
+}
+
+// Handle Forgot Password AJAX request
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'forgot_password') {
+    header('Content-Type: application/json');
+    $response = ['status' => 'error', 'message' => 'Invalid request.'];
+    
+    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
+        $response['message'] = 'Invalid security token. Please refresh and try again.';
+        echo json_encode($response);
+        exit;
+    }
+    
+    $identifier = trim($_POST['identifier'] ?? '');
+    $contactMethod = $_POST['contact_method'] ?? 'email';
+    
+    if (empty($identifier)) {
+        $response['message'] = 'Please enter your username or email address.';
+        echo json_encode($response);
+        exit;
+    }
+    
+    $stmt = $pdo->prepare("
+        SELECT id, username, email, full_name, role, phone_number, twofa_secret
+        FROM users
+        WHERE (username = :identifier1 OR email = :identifier2)
+        AND status = 'active'
+        AND role IN ('admin', 'staff', 'resident')
+        LIMIT 1
+    ");
+    $stmt->execute([':identifier1' => $identifier, ':identifier2' => $identifier]);
+    $user = $stmt->fetch();
+    
+    if ($user) {
+        $resetToken = bin2hex(random_bytes(32));
+        $resetExpiry = date('Y-m-d H:i:s', time() + 3600);
+        $pdo->prepare("UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?")->execute([$resetToken, $resetExpiry, $user['id']]);
+        
+        if ($contactMethod === 'email' && $user['email']) {
+            $isLocal = (strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || ($_SERVER['HTTP_HOST'] ?? '') === '127.0.0.1');
+            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+            $resetUrl = $protocol . $_SERVER['HTTP_HOST'] . BASE_URL . '/reset-password.php?token=' . $resetToken;
+            $subject = 'Password Reset - ' . APP_NAME;
+            $message = "
+                <html><body>
+                    <h2>Password Reset Request</h2>
+                    <p>Hello {$user['full_name']},</p>
+                    <p>You requested a password reset for your Barangay Bidduang Management Portal account.</p>
+                    <p><a href='$resetUrl' style='background:#1a5c38;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;'>Reset Password</a></p>
+                    <p>This link expires in 1 hour.</p>
+                    <p>If you didn't request this, please ignore this email.</p>
+                </body></html>";
+            $headers = "From: " . ADMIN_EMAIL . "\r\n";
+            $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+            if (!mail($user['email'], $subject, $message, $headers)) {
+                error_log("Password reset email failed to send to {$user['email']}. Reset URL: {$resetUrl}");
+            }
+        }
+        
+        if ($contactMethod === 'sms' && !empty($user['phone_number'])) {
+            $resetCode = substr($resetToken, 0, 6);
+            $pdo->prepare("UPDATE users SET reset_code = ?, reset_code_expiry = ? WHERE id = ?")->execute([$resetCode, $resetExpiry, $user['id']]);
+        }
+        
+        log_audit('password_reset_request', 'user', $user['id'], null, ['method' => $contactMethod]);
+    }
+    
+    $response = [
+        'status' => 'success',
+        'message' => 'If the account exists, a password reset link has been sent to your email/SMS.'
+    ];
+    
+    if ($user && $resetToken) {
+        $isLocalDev = (strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || ($_SERVER['HTTP_HOST'] ?? '') === '127.0.0.1');
+        if ($isLocalDev) {
+            $response['debug_reset_url'] = 'http://localhost' . BASE_URL . '/reset-password.php?token=' . $resetToken;
+        }
+    }
+    echo json_encode($response);
+    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -274,7 +452,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             });
         });
 
-        // Password show/hide is handled by assets/js/main.js (initPasswordToggles)
         // Forgot
         const forgotBtn = document.getElementById('showForgotBtn');
         const forgotOverlay = document.getElementById('forgotOverlay');
