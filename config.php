@@ -154,10 +154,10 @@ function secure_session_regenerate() {
  */
 function redirect_to_login() {
     if (!headers_sent()) {
-        header('Location: /BARANGAY_MANAGEMENT/login.php');
+        header('Location: ' . BASE_URL . '/login.php');
         exit;
     }
-    die('<script>window.location.href = "/BARANGAY_MANAGEMENT/login.php";</script>');
+    die('<script>window.location.href = \'' . BASE_URL . '/login.php\';</script>');
 }
 
 /**
@@ -167,9 +167,9 @@ function redirect_if_authenticated() {
     if (isset($_SESSION['user_id']) && validate_session()) {
         $role = $_SESSION['user_role'] ?? 'resident';
         if ($role === 'admin' || $role === 'staff') {
-            header('Location: /BARANGAY_MANAGEMENT/dashboard.php');
+            header('Location: ' . BASE_URL . '/dashboard.php');
         } else {
-            header('Location: /BARANGAY_MANAGEMENT/resident-dashboard.php');
+            header('Location: ' . BASE_URL . '/resident-dashboard.php');
         }
         exit;
     }
@@ -315,7 +315,9 @@ function log_audit($action, $entityType = null, $entityId = null, $oldValues = n
 // ============================================================
 // BASE PATH FOR REDIRECTS
 // ============================================================
-define('BASE_URL', '/BARANGAY_MANAGEMENT');
+// Localhost serves from /BARANGAY_MANAGEMENT subfolder.
+// Vercel & Railway serve from root, so set BASE_PATH='' as an env var there.
+define('BASE_URL', rtrim(getenv('BASE_PATH') ?: '/BARANGAY_MANAGEMENT', '/'));
 define('ADMIN_EMAIL', 'noreply@bidduang.gov.ph');
 define('APP_NAME', 'Barangay Bidduang Management Portal');
 define('UPLOAD_PATH', __DIR__ . '/uploads');
