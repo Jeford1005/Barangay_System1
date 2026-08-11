@@ -20,6 +20,7 @@
   "routes": [
     { "src": "/(2fa-verify|admin-audit|broadcast|logout|resident-dashboard|reset-password)\\.php", "dest": "/login.php", "status": 302 },
     { "src": "/api/(.*)", "dest": "/api/$1.php" },
+    { "src": "/(.+)\\.(css|js|png|jpg|jpeg|gif|svg|ico|webp|woff2?|ttf|eot)$", "dest": "/$1.$2" },
     { "src": "/(.*)", "dest": "/$1.php" }
   ]
 }
