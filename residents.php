@@ -83,8 +83,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ");
                     $stmt->execute([$first_name, $middle_name ?: null, $last_name, $suffix ?: null, $birth_date, $birth_place ?: null, $gender, $civil_status, $citizenship, $religion ?: null, $occupation ?: null, $contact_number ?: null, $email ?: null, $photo_path, $voter_status, $is_pwd, $is_senior, $is_indigent, $fourps_beneficiary, $household_id, $purok_id, $status]);
                     $newId = $pdo->lastInsertId();
-                    log_audit('create', 'resident', $newId, null, ['name' => "$first_name $last_name"]);
-                    
+                    $fullName = trim("$first_name $last_name");
+                    $newValues = [
+                        'first_name' => $first_name, 'last_name' => $last_name, 'middle_name' => $middle_name,
+                        'birth_date' => $birth_date, 'gender' => $gender, 'civil_status' => $civil_status,
+                        'contact_number' => $contact_number, 'email' => $email, 'status' => $status
+                    ];
+                    AuditLogger::create('Resident', $newId, $newValues, null, "Added resident $fullName");
+
                     $_SESSION['flash_message'] = 'Resident added successfully.';
                     header('Location: residents.php');
                     exit;
@@ -97,8 +103,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         WHERE id=?
                     ");
                     $stmt->execute([$first_name, $middle_name ?: null, $last_name, $suffix ?: null, $birth_date, $birth_place ?: null, $gender, $civil_status, $citizenship, $religion ?: null, $occupation ?: null, $contact_number ?: null, $email ?: null, $photo_path, $voter_status, $is_pwd, $is_senior, $is_indigent, $fourps_beneficiary, $household_id, $purok_id, $status, $id]);
-                    log_audit('update', 'resident', $id, $oldValues, ['name' => "$first_name $last_name"]);
-                    
+                    $fullName = trim("$first_name $last_name");
+                    $newValues = [
+                        'first_name' => $first_name, 'last_name' => $last_name, 'middle_name' => $middle_name,
+                        'birth_date' => $birth_date, 'gender' => $gender, 'civil_status' => $civil_status,
+                        'contact_number' => $contact_number, 'email' => $email, 'status' => $status
+                    ];
+                    AuditLogger::update('Resident', $id, $oldValues, $newValues, null, "Edited resident $fullName");
+
                     $_SESSION['flash_message'] = 'Resident updated successfully.';
                     header('Location: residents.php');
                     exit;
@@ -106,10 +118,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } elseif ($action === 'delete' && isset($_POST['id'])) {
             $id = $_POST['id'];
+            $stmt = $pdo->prepare("SELECT * FROM residents WHERE id = ?");
+            $stmt->execute([$id]);
+            $deleted = $stmt->fetch();
+            $delName = $deleted ? trim(($deleted['first_name'] ?? '') . ' ' . ($deleted['last_name'] ?? '')) : "ID $id";
             $stmt = $pdo->prepare("DELETE FROM residents WHERE id = ?");
             $stmt->execute([$id]);
-            log_audit('delete', 'resident', $id);
-            
+            AuditLogger::delete('Resident', $id, $deleted, null, "Deleted resident $delName");
+
             $_SESSION['flash_message'] = 'Resident deleted successfully.';
             header('Location: residents.php');
             exit;

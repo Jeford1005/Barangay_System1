@@ -50,10 +50,11 @@ class AuditLogger
         $newValues = null,
         string $severity = 'INFO',
         ?int $userId = null,
-        ?string $userRole = null
+        ?string $userRole = null,
+        ?string $description = null
     ) {
         return self::getInstance()->insertLog(
-            $actionType, $module, $recordId, $oldValues, $newValues, $severity, $userId, $userRole
+            $actionType, $module, $recordId, $oldValues, $newValues, $severity, $userId, $userRole, $description
         );
     }
 
@@ -65,7 +66,8 @@ class AuditLogger
         $newValues,
         string $severity,
         ?int $userId,
-        ?string $userRole
+        ?string $userRole,
+        ?string $description = null
     ) {
         if ($userId === null) {
             $userId = $_SESSION['user_id'] ?? null;
@@ -89,13 +91,14 @@ class AuditLogger
 
         if (!$this->pdo) {
             error_log(sprintf(
-                "[AUDIT] %s | user_id=%s | role=%s | %s:%s | %s | old=%s | new=%s | ip=%s",
+                "[AUDIT] %s | user_id=%s | role=%s | %s:%s | %s | desc=%s | old=%s | new=%s | ip=%s",
                 date('Y-m-d H:i:s'),
                 $userId ?? 'NULL',
                 $userRole ?? 'NULL',
                 $module,
                 $actionType,
                 $recordId ?? 'NULL',
+                $description ?? 'NULL',
                 $oldJson ?? 'NULL',
                 $newJson ?? 'NULL',
                 $ipAddress ?? 'NULL'
@@ -107,10 +110,10 @@ class AuditLogger
             $stmt = $this->pdo->prepare("
                 INSERT INTO audit_logs
                     (timestamp, user_id, user_role, action_type, module_name,
-                     record_id, old_values, new_values, ip_address, user_agent, severity_level)
+                     record_id, old_values, new_values, ip_address, user_agent, severity_level, description)
                 VALUES
                     (NOW(), :user_id, :user_role, :action_type, :module_name,
-                     :record_id, :old_values, :new_values, :ip_address, :user_agent, :severity_level)
+                     :record_id, :old_values, :new_values, :ip_address, :user_agent, :severity_level, :description)
             ");
 
             $stmt->execute([
@@ -124,6 +127,7 @@ class AuditLogger
                 ':ip_address'     => $ipAddress,
                 ':user_agent'     => $userAgent,
                 ':severity_level' => $severity,
+                ':description'    => $description,
             ]);
 
             return (int)$this->pdo->lastInsertId();
@@ -174,9 +178,9 @@ class AuditLogger
     }
 
     // Convenience methods
-    public static function create(string $module, $recordId = null, $newValues = null, ?int $userId = null): void
+    public static function create(string $module, $recordId = null, $newValues = null, ?int $userId = null, ?string $description = null): void
     {
-        self::log('CREATE', $module, $recordId, null, $newValues, 'INFO', $userId);
+        self::log('CREATE', $module, $recordId, null, $newValues, 'INFO', $userId, null, $description);
     }
 
     public static function read(string $module, $recordId = null, ?int $userId = null): void
@@ -184,15 +188,15 @@ class AuditLogger
         self::log('READ', $module, $recordId, null, null, 'INFO', $userId);
     }
 
-    public static function update(string $module, $recordId = null, $oldValues = null, $newValues = null, ?int $userId = null): void
+    public static function update(string $module, $recordId = null, $oldValues = null, $newValues = null, ?int $userId = null, ?string $description = null): void
     {
         $severity = ($oldValues !== $newValues) ? 'WARN' : 'INFO';
-        self::log('UPDATE', $module, $recordId, $oldValues, $newValues, $severity, $userId);
+        self::log('UPDATE', $module, $recordId, $oldValues, $newValues, $severity, $userId, null, $description);
     }
 
-    public static function delete(string $module, $recordId = null, $oldValues = null, ?int $userId = null): void
+    public static function delete(string $module, $recordId = null, $oldValues = null, ?int $userId = null, ?string $description = null): void
     {
-        self::log('DELETE', $module, $recordId, $oldValues, null, 'WARN', $userId);
+        self::log('DELETE', $module, $recordId, $oldValues, null, 'WARN', $userId, null, $description);
     }
 
     public static function export(string $module, $criteria = null, ?int $userId = null): void
@@ -208,7 +212,7 @@ class AuditLogger
 
 // Backwards-compatible wrapper
 if (!function_exists('log_audit')) {
-    function log_audit($action, $entityType = null, $entityId = null, $oldValues = null, $newValues = null) {
+    function log_audit($action, $entityType = null, $entityId = null, $oldValues = null, $newValues = null, $description = null) {
         $actionMap = [
             'login' => ['AUTH', 'Auth', ['event' => 'login'], 'INFO'],
             'logout' => ['AUTH', 'Auth', ['event' => 'logout'], 'INFO'],
@@ -219,9 +223,9 @@ if (!function_exists('log_audit')) {
 
         if (isset($actionMap[$action])) {
             $mapped = $actionMap[$action];
-            AuditLogger::log($mapped[0], $mapped[1], $entityId, $oldValues, $newValues ?? $mapped[2], $mapped[3]);
+            AuditLogger::log($mapped[0], $mapped[1], $entityId, $oldValues, $newValues ?? $mapped[2], $mapped[3], null, null, $description);
         } else {
-            AuditLogger::log('READ', $entityType ?? 'System', $entityId, $oldValues, $newValues, 'INFO');
+            AuditLogger::log('READ', $entityType ?? 'System', $entityId, $oldValues, $newValues, 'INFO', null, null, $description);
         }
     }
 }

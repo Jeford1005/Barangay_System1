@@ -105,6 +105,13 @@ $sidebar = [
         .action-DELETE { background: #f8d7da; color: #721c24; }
         .action-EXPORT { background: #e2d9f3; color: #4b0f7a; }
         .action-AUTH { background: #f5c6f0; color: #66107a; }
+        .audit-desc {
+            margin-top: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #1a3c28;
+            line-height: 1.3;
+        }
         .json-cell {
             font-family: 'Courier New', monospace;
             font-size: 0.8rem;
@@ -393,7 +400,7 @@ async function loadAuditLogs(page = 0) {
                     <td>${rowNum}</td>
                     <td>${new Date(row.timestamp).toLocaleString()}</td>
                     <td>${userName}</td>
-                    <td><span class="action-badge ${actionClass}">${row.action_type}</span></td>
+                    <td><span class="action-badge ${actionClass}">${row.action_type}</span>${row.description ? `<div class="audit-desc">${row.description}</div>` : ''}</td>
                     <td>${row.module_name || ''}</td>
                     <td>${row.record_id || ''}</td>
                     <td class="json-cell" onclick="showJsonDiff('${row.old_values || 'null'}', 'Old Values')">${formatJsonCell(row.old_values)}</td>

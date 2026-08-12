@@ -310,6 +310,7 @@ CREATE TABLE `audit_logs` (
   `ip_address` varchar(45) DEFAULT NULL,
   `user_agent` text DEFAULT NULL,
   `severity_level` enum('INFO','WARN','CRITICAL') NOT NULL DEFAULT 'INFO',
+  `description` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`log_id`),
   KEY `idx_timestamp` (`timestamp`),
   KEY `idx_user_id` (`user_id`),

@@ -83,12 +83,12 @@ $total = (int)$stmt->fetchColumn();
 // so we inline the already-validated integer values and bind only the WHERE params.
 $stmt = $pdo->prepare("
     SELECT log_id, timestamp, user_id, user_role, action_type, module_name,
-           record_id, old_values, new_values, ip_address, user_agent, severity_level
+           record_id, old_values, new_values, ip_address, user_agent, severity_level, description
     FROM audit_logs
     $whereSQL
     ORDER BY $sortBy $sortDir
-    LIMIT " . (int)$limit . " OFFSET " . (int)$offset
-);
+    LIMIT " . (int)$limit . " OFFSET " . (int)$offset . "
+");
 
 $stmt->execute($params);
 $logs = $stmt->fetchAll();
