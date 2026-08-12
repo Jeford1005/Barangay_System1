@@ -297,6 +297,7 @@ $csrf = generate_csrf_token();
                             <th>Purok</th>
                             <th>Contact</th>
                             <th>Status</th>
+                            <th>Classification</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -320,6 +321,15 @@ $csrf = generate_csrf_token();
                                         <span class="badge <?= $r['status']==='Active' ? 'badge-success' : ($r['status']==='Deceased' ? 'badge-danger' : 'badge-warning') ?>">
                                             <?= esc($r['status']) ?>
                                         </span>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        $clsLabel = $r['is_senior'] ? 'Senior' : ($r['is_pwd'] ? 'PWD' : ($r['is_indigent'] ? 'Indigent' : ($r['fourps_beneficiary'] ? '4Ps' : '')));
+                                        if ($clsLabel): ?>
+                                            <span class="badge badge-info"><?= esc($clsLabel) ?></span>
+                                        <?php else: ?>
+                                            <span style="color:#9ca3af;">—</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="actions">
                                         <button class="btn btn-secondary" onclick="openEditModal(
