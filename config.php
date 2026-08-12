@@ -360,7 +360,7 @@ if ($basePath !== false && ($basePath === '' || $basePath === '/')) {
 define('BASE_URL', $basePath);
 define('ADMIN_EMAIL', 'noreply@bidduang.gov.ph');
 define('APP_NAME', 'Barangay Bidduang Management Portal');
-define('ASSET_VERSION', '20260811.4');
+define('ASSET_VERSION', '20260811.5');
 define('UPLOAD_PATH', __DIR__ . '/uploads');
 define('UPLOAD_URL', BASE_URL . '/uploads');
 
