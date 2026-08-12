@@ -1898,11 +1898,15 @@ th {
         white-space: nowrap;
     }
     .sidebar-nav li a.active::before { display: none; }
+    .app { display: block; width: 100%; overflow-x: hidden; }
     .main-content {
+        display: block;
         margin-left: 0;
+        width: 100%;
+        max-width: 100%;
         padding-top: 60px;
     }
-    .content-wrap { padding: 1rem .9rem 0; }
+    .content-wrap { padding: 1rem .9rem 0; max-width: 100%; }
     .metrics-grid { grid-template-columns: 1fr 1fr; gap: .75rem; }
     .charts-grid { grid-template-columns: 1fr; }
     .page-title { font-size: 1.35rem; }
