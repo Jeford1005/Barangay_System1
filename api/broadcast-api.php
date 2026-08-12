@@ -22,7 +22,7 @@ header('Content-Type: application/json');
 
 // Require authentication
 require_auth();
-require_role(['admin', 'staff']);
+require_role(['admin', 'staff', 'official']);
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];

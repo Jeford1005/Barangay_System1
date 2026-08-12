@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/config.php';
-require_role(['admin', 'staff']);
+require_role(['admin', 'staff', 'official']);
 
 $message = '';
 $error = '';
@@ -166,7 +166,7 @@ $beneficiaries = $pdo->query("
                                 <td>
                                     <div class="actions">
                                         <button class="btn btn-sm btn-info" onclick="editProgram(<?= $p['id'] ?>)"><i class="fas fa-pen-to-square"></i></button>
-                                        <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this program?')">
+                                        <form method="POST" style="display:inline;" data-confirm-title="Delete Program" data-confirm-msg="Delete program '<?= esc(addslashes($p['program_name'])) ?>'? This cannot be undone." onsubmit="return handleDelete(this);">
                                             <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                                             <input type="hidden" name="action" value="delete_program">
                                             <input type="hidden" name="id" value="<?= $p['id'] ?>">
@@ -205,7 +205,7 @@ $beneficiaries = $pdo->query("
                                 <td><span class="badge badge-<?= $b['status']=='Enrolled'?'success':($b['status']=='Completed'?'info':'secondary') ?>"><?= esc($b['status']) ?></span></td>
                                 <td><?= esc($b['notes'] ?: '-') ?></td>
                                 <td>
-                                    <form method="POST" style="display:inline;" onsubmit="return confirm('Remove this beneficiary?')">
+                                    <form method="POST" style="display:inline;" data-confirm-title="Remove Beneficiary" data-confirm-msg="Remove beneficiary '<?= esc(addslashes(($b['first_name'] ?? '') . ' ' . ($b['last_name'] ?? ''))) ?>'? This cannot be undone." onsubmit="return handleDelete(this);">
                                         <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                                         <input type="hidden" name="action" value="delete_beneficiary">
                                         <input type="hidden" name="id" value="<?= $b['id'] ?>">

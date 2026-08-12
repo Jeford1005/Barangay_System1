@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
         }
         
         $roleMap = [
-            'administrator' => ['admin', 'staff'],
+            'administrator' => ['admin', 'staff', 'official'],
             'resident' => ['resident']
         ];
         $allowedRoles = $roleMap[$inputRole] ?? [];
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
         $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = :id")->execute([':id' => $user['id']]);
         log_audit('login', 'user', $user['id']);
         
-        $redirectUrl = ($user['role'] === 'admin' || $user['role'] === 'staff')
+        $redirectUrl = ($user['role'] === 'admin' || $user['role'] === 'staff' || $user['role'] === 'official')
             ? BASE_URL . '/dashboard.php'
             : BASE_URL . '/resident-dashboard.php';
         
@@ -366,16 +366,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                             <input type="text" id="regAddress" name="address" required placeholder="Your residential address" autocomplete="street-address">
                             <span class="error-msg" id="regAddressError"></span>
                         </div>
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label for="regRole"><i class="fas fa-user-tag"></i> Position / Role</label>
-                            <select id="regRole" name="role" required>
-                                <option value="">Select position / role</option>
-                                <option value="resident">Resident</option>
-                                <option value="staff">Staff</option>
-                                <option value="official">Barangay Official</option>
-                            </select>
-                            <span class="error-msg" id="regRoleError"></span>
-                        </div>
                         <div class="form-group">
                             <label for="regPassword"><i class="fas fa-lock"></i> Password</label>
                             <div class="password-wrapper">
@@ -502,16 +492,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         showLoginBtn?.addEventListener('click', hideRegister);
         registerForm?.addEventListener('submit', function(e){
             e.preventDefault();
-            const submitBtn = document.getElementById('registerSubmitBtn');
-            submitBtn.disabled=true; submitBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Creating...';
-            const fd = new FormData(registerForm);
-            fetch(window.location.href, { method:'POST', body: fd })
-                .then(r=>r.json()).then(data=>{
-                    submitBtn.disabled=false; submitBtn.innerHTML='<i class="fas fa-user-plus"></i> Create Account';
-                    if (data.status==='success'){
-                        Swal.fire({icon:'success',title:'Account Created!',text:data.message,confirmButtonColor:'#1E5631'}).then(()=>hideRegister());
-                    } else showAlert(registerAlert,data.message,'error');
-                }).catch(()=>{ submitBtn.disabled=false; submitBtn.innerHTML='<i class="fas fa-user-plus"></i> Create Account'; showAlert(registerAlert,'An error occurred. Please try again.','error'); });
+            window.location.href = 'register.php';
         });
 
         function showAlert(element, message, type){

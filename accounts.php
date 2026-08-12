@@ -93,7 +93,7 @@ $page = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 15;
 $offset = ($page - 1) * $perPage;
 
-$where = ['1=1'];
+$where = ["u.role != 'resident'"];
 $params = [];
 if ($search) {
     $where[] = "(u.username LIKE ? OR u.email LIKE ? OR u.full_name LIKE ?)";
@@ -174,11 +174,15 @@ $action = $_POST['action'] ?? ($_GET['action'] ?? '');
         <div class="stats-row">
             <div class="stat-card">
                 <div class="stat-icon" style="background:var(--secondary);"><i class="fas fa-users"></i></div>
-                <div class="stat-info"><h3><?= number_format($pdo->query("SELECT COUNT(*) FROM users")->fetchColumn()) ?></h3><p>Total Accounts</p></div>
+                <div class="stat-info"><h3><?= number_format($pdo->query("SELECT COUNT(*) FROM users WHERE role != 'resident'")->fetchColumn()) ?></h3><p>Total Accounts</p></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="background:var(--accent);"><i class="fas fa-user-shield"></i></div>
                 <div class="stat-info"><h3><?= number_format($pdo->query("SELECT COUNT(*) FROM users WHERE role='admin'")->fetchColumn()) ?></h3><p>Admins</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:var(--info);"><i class="fas fa-user-tie"></i></div>
+                <div class="stat-info"><h3><?= number_format($pdo->query("SELECT COUNT(*) FROM users WHERE role='official'")->fetchColumn()) ?></h3><p>Officials</p></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="background:var(--info);"><i class="fas fa-user"></i></div>
@@ -198,8 +202,8 @@ $action = $_POST['action'] ?? ($_GET['action'] ?? '');
                     <select class="form-control" style="width:auto;min-width:130px;" onchange="window.location.href='?role='+this.value+'&search=<?= urlencode($search) ?>'">
                         <option value="">All Roles</option>
                         <option value="admin" <?= $roleFilter==='admin'?'selected':'' ?>>Admin</option>
+                        <option value="official" <?= $roleFilter==='official'?'selected':'' ?>>Official</option>
                         <option value="staff" <?= $roleFilter==='staff'?'selected':'' ?>>Staff</option>
-                        <option value="resident" <?= $roleFilter==='resident'?'selected':'' ?>>Resident</option>
                     </select>
                     <button class="btn btn-primary" onclick="openModal('accountModal')"><i class="fas fa-plus"></i> Add Account</button>
                 </div>
@@ -261,7 +265,7 @@ $action = $_POST['action'] ?? ($_GET['action'] ?? '');
                                     <div class="form-group">
                                         <label for="role">Role *</label>
                                         <select name="role" id="role" class="form-control" required>
-                                                                    <option value="staff">Staff</option><option value="admin">Admin</option><option value="resident">Resident</option>
+                                                                    <option value="admin">Admin</option><option value="official">Official</option><option value="staff">Staff</option>
                                                                 </select>
                                                             </div>
                                                             <div class="form-group">

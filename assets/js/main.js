@@ -685,4 +685,59 @@
         }, 3000);
     };
 
+    // Reusable confirmation popup for delete/destructive actions
+    let _confirmResolve = null;
+    function ensureConfirmModal() {
+        if (document.getElementById('confirmModal')) return;
+        const m = document.createElement('div');
+        m.id = 'confirmModal';
+        m.className = 'confirm-overlay';
+        m.innerHTML =
+            '<div class="confirm-box" role="alertdialog" aria-modal="true">' +
+                '<div class="confirm-icon"><i class="fas fa-exclamation-triangle"></i></div>' +
+                '<h3 class="confirm-title" id="confirmTitle">Are you sure?</h3>' +
+                '<p class="confirm-text" id="confirmText">This action cannot be undone.</p>' +
+                '<div class="confirm-actions">' +
+                    '<button type="button" class="btn btn-outline" id="confirmCancel">Cancel</button>' +
+                    '<button type="button" class="btn btn-danger" id="confirmOk">Delete</button>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(m);
+        m.addEventListener('click', function(e) {
+            if (e.target === m) doCancel();
+        });
+        m.querySelector('#confirmCancel').addEventListener('click', doCancel);
+        m.querySelector('#confirmOk').addEventListener('click', function() {
+            m.classList.remove('show');
+            const r = _confirmResolve; _confirmResolve = null;
+            if (r) r(true);
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && m.classList.contains('show')) doCancel();
+        });
+    }
+    function doCancel() {
+        const m = document.getElementById('confirmModal');
+        if (m) m.classList.remove('show');
+        const r = _confirmResolve; _confirmResolve = null;
+        if (r) r(false);
+    }
+    window.confirmAction = function(message, title) {
+        ensureConfirmModal();
+        const m = document.getElementById('confirmModal');
+        m.querySelector('#confirmTitle').textContent = title || 'Are you sure?';
+        m.querySelector('#confirmText').textContent = message || 'This action cannot be undone.';
+        m.classList.add('show');
+        return new Promise(function(resolve) { _confirmResolve = resolve; });
+    };
+
+    // Wire a delete form to the styled popup. Put onsubmit="return handleDelete(this)" on the form.
+    window.handleDelete = function(form) {
+        if (form.dataset.confirmed === '1') { form.dataset.confirmed = '0'; return true; }
+        window.confirmAction(form.dataset.confirmMsg, form.dataset.confirmTitle).then(function(ok) {
+            if (ok) { form.dataset.confirmed = '1'; form.submit(); }
+        });
+        return false;
+    };
+
 })();

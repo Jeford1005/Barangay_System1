@@ -13,7 +13,7 @@
  */
 
 require_once __DIR__ . '/config.php';
-require_role(['admin', 'staff']);
+require_role(['admin', 'staff', 'official']);
 
 $currentUser = current_user();
 

@@ -6,7 +6,7 @@
  */
 
 require_once __DIR__ . '/config.php';
-require_role(['admin', 'staff']);
+require_role(['admin', 'staff', 'official']);
 
 $user = current_user();
 $csrf = generate_csrf_token();

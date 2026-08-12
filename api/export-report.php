@@ -25,7 +25,7 @@ if (!isLoggedIn()) {
     exit;
 }
 
-require_role(['admin', 'staff']);
+require_role(['admin', 'staff', 'official']);
 
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? '';

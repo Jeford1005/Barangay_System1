@@ -11,7 +11,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require_role(['admin', 'staff']);
+require_role(['admin', 'staff', 'official']);
 
 $message = '';
 $error = '';
@@ -346,7 +346,7 @@ $csrf = generate_csrf_token();
                                             <?= (int)($r['is_indigent'] ?? 0) ?>,
                                             <?= (int)($r['fourps_beneficiary'] ?? 0) ?>
                                         )">Edit</button>
-                                        <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this resident?');">
+                                        <form method="POST" style="display:inline;" data-confirm-title="Delete Resident" data-confirm-msg="Delete resident <?= esc(addslashes($r['first_name'] . ' ' . $r['last_name'])) ?>? This cannot be undone." onsubmit="return handleDelete(this);">
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
                                             <input type="hidden" name="csrf_token" value="<?= esc($csrf) ?>">

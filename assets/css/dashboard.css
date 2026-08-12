@@ -401,6 +401,22 @@ html, body {
     transition: box-shadow .2s ease, transform .2s ease;
 }
 
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #eef1f4;
+}
+
+.card-header .btn,
+.card-header button {
+    margin-left: auto;
+}
+
 .card-title {
     font-size: 1.2rem;
     font-weight: 700;
@@ -1636,6 +1652,70 @@ th {
     border: 1px solid #60a5fa;
 }
 
+.confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 30, 20, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+.confirm-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+.confirm-box {
+    background: #fff;
+    width: 90%;
+    max-width: 380px;
+    border-radius: 16px;
+    padding: 1.6rem 1.5rem 1.4rem;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    text-align: center;
+    transform: translateY(12px) scale(0.97);
+    transition: transform 0.2s ease;
+    border-top: 4px solid #c0392b;
+}
+.confirm-overlay.show .confirm-box {
+    transform: translateY(0) scale(1);
+}
+.confirm-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 0.8rem;
+    border-radius: 50%;
+    background: #fee2e2;
+    color: #c0392b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+.confirm-title {
+    margin: 0 0 0.4rem;
+    font-size: 1.2rem;
+    color: #1a3c28;
+}
+.confirm-text {
+    margin: 0 0 1.2rem;
+    color: #6b7280;
+    font-size: 0.92rem;
+    line-height: 1.4;
+}
+.confirm-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+.confirm-actions .btn {
+    flex: 1;
+    justify-content: center;
+    min-height: 44px;
+}
+
 .toast-close {
     background: none;
     border: none;
@@ -1813,7 +1893,7 @@ th {
 
 /* Action buttons compact + consistent */
 .actions { white-space: nowrap; }
-.actions .btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; margin-right: 0.4rem; }
+.actions .btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; margin-right: 0.4rem; min-width: 78px; text-align: center; }
 .actions form { display: inline-block; }
 
 /* ===== Classification chips (Senior / PWD / Indigent / 4Ps) ===== */

@@ -12,7 +12,7 @@
  */
 
 require_once __DIR__ . '/../config.php';
-require_role(['admin', 'staff']);
+require_role(['admin', 'staff', 'official']);
 
 header('Content-Type: application/json');
 

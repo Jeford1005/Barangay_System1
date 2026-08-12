@@ -421,6 +421,42 @@ body {
     .role-btn.active { background: transparent; box-shadow: none; }
     .form-panel.switching { animation: formSwitchIn .35s ease; }
 }
+
+/* Fit standard laptops (1366x768, 1280x720, smaller) with no vertical scroll */
+@media (min-width: 1025px) and (max-height: 850px) {
+    .auth-right { padding: .9rem 2rem; }
+    .form-header { margin-bottom: .5rem; }
+    .form-header h2 { font-size: 1.35rem; }
+    .form-header p { font-size: .9rem; }
+    .role-switcher { margin-bottom: .6rem; padding: .25rem; }
+    .role-btn { padding: .45rem; font-size: .9rem; }
+    .form-group { margin-bottom: .5rem; }
+    .form-group label { margin-bottom: .25rem; font-size: .85rem; }
+    .form-group input, .form-group select { padding: .55rem .85rem; font-size: .95rem; }
+    .btn-submit { padding: .6rem; font-size: 1rem; }
+    .form-divider { margin: .6rem 0; }
+    .btn-outline { padding: .6rem; }
+    .form-footer { margin-top: .45rem; font-size: .9rem; }
+    .security-callout { margin-top: .7rem; padding: .6rem .8rem; }
+    .security-callout h4 { font-size: .9rem; }
+    .security-callout p { font-size: .78rem; line-height: 1.35; }
+    .alert { margin-top: .5rem; padding: .6rem .85rem; }
+}
+
+@media (min-width: 1025px) and (max-height: 700px) {
+    .auth-right { padding: .7rem 2rem; }
+    .form-header { margin-bottom: .4rem; }
+    .form-header h2 { font-size: 1.25rem; }
+    .role-switcher { margin-bottom: .5rem; padding: .2rem; }
+    .role-btn { padding: .4rem; }
+    .form-group { margin-bottom: .4rem; }
+    .form-group input, .form-group select { padding: .5rem .8rem; }
+    .btn-submit, .btn-outline { padding: .5rem; }
+    .form-divider { margin: .5rem 0; }
+    .security-callout { margin-top: .55rem; padding: .5rem .7rem; }
+    .form-footer { margin-top: .35rem; }
+}
+
 @media (max-width: 640px) {
     html { font-size: 15px; }
     .auth-left { padding: 1.1rem 1rem .9rem; }

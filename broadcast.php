@@ -18,7 +18,7 @@ require_once 'lib/SMSGateway.php';
 require_once 'lib/AuditLogger.php';
 
 require_auth();
-require_role(['admin', 'staff']);
+require_role(['admin', 'staff', 'official']);
 
 $currentUser = current_user();
 $message = '';
