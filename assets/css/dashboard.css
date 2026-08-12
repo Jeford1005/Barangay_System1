@@ -1940,4 +1940,6 @@ th {
     table th, table td { padding: .55rem .5rem; font-size: .82rem; }
     .btn { min-height: 46px; font-size: .95rem; }
     .signature-line { width: 150px; }
-}
+    .form-group, .form-control, input, select, textarea { max-width: 100%; }
+    .empty-state, .empty-state h3, .empty-state p { max-width: 100%; }
+    .reports-body, .stats-row { width: 100%; max-width: 100%; }
