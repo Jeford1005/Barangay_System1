@@ -153,11 +153,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     <p>This link expires in 1 hour.</p>
                     <p>If you didn't request this, please ignore this email.</p>
                 </body></html>";
-            $headers = "From: " . ADMIN_EMAIL . "
-\n";
-            $headers .= "Content-Type: text/html; charset=UTF-8
-\n";
-            if (!mail($user['email'], $subject, $message, $headers)) {
+            require_once __DIR__ . '/lib/Mailer.php';
+            if (!Mailer::send($user['email'], $subject, $message, ['to_name' => $user['full_name']])) {
                 error_log("Password reset email failed to send to {$user['email']}. Reset URL: {$resetUrl}");
             }
         }

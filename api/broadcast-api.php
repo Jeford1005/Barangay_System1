@@ -164,18 +164,13 @@ function handleSend(): array
             $fromAddr = defined('ADMIN_EMAIL') ? ADMIN_EMAIL : 'noreply@bidduang.gov.ph';
             $htmlBody = "<html><body style='font-family:Arial,sans-serif;'>" . nl2br(htmlspecialchars($message)) .
                 "<hr><p style='font-size:12px;color:#666;'>Barangay Bidduang Management Portal</p></body></html>";
-            $headers = "From: " . $fromAddr . "
-\n" .
-                       "Reply-To: " . $fromAddr . "
-\n" .
-                       "Content-Type: text/html; charset=UTF-8
-\n";
+            require_once __DIR__ . '/../lib/Mailer.php';
             foreach ($recipients as $recipient) {
                 if (empty($recipient['email'])) {
                     $failed++;
                     continue;
                 }
-                if (@mail($recipient['email'], $subject, $htmlBody, $headers)) {
+                if (Mailer::send($recipient['email'], $subject, $htmlBody, ['to_name' => $recipient['full_name'] ?? '', 'reply_to' => $fromAddr])) {
                     $sent++;
                 } else {
                     $failed++;
