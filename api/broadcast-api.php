@@ -121,12 +121,16 @@ function handleSend(): array
 
     try {
         $pdo = $GLOBALS['pdo'];
+        $channel = strtoupper($_POST['channel'] ?? 'EMAIL');
+        if (!in_array($channel, ['SMS', 'EMAIL'])) {
+            $channel = 'EMAIL';
+        }
 
         // If creating a new broadcast, insert it
         if (!$broadcastId) {
             $stmt = $pdo->prepare("
-                INSERT INTO broadcasts (category, title, message, sender_id, sender_role, audience_filter, status, priority)
-                VALUES (?, ?, ?, ?, ?, ?, 'QUEUED', ?)
+                INSERT INTO broadcasts (category, title, message, sender_id, sender_role, audience_filter, channel, status, priority)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'QUEUED', ?)
             ");
             $priority = ($category === 'EMERGENCY') ? 5 : 1;
             $stmt->execute([
@@ -136,20 +140,75 @@ function handleSend(): array
                 $_SESSION['user_id'],
                 $_SESSION['user_role'],
                 json_encode($audienceFilter),
+                $channel,
                 $priority,
             ]);
             $broadcastId = $pdo->lastInsertId();
         } else {
             // Update the broadcast to QUEUED status
-            $stmt = $pdo->prepare("UPDATE broadcasts SET status = 'QUEUED', message = ?, category = ?, audience_filter = ? WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE broadcasts SET status = 'QUEUED', message = ?, category = ?, audience_filter = ?, channel = ? WHERE id = ?");
             $priority = ($category === 'EMERGENCY') ? 5 : 1;
-            $stmt->execute([$message, $category, json_encode($audienceFilter), $broadcastId]);
+            $stmt->execute([$message, $category, json_encode($audienceFilter), $channel, $broadcastId]);
         }
 
         // Calculate audience
         $recipients = getAudienceRecipients($audienceFilter);
         $recipientCount = count($recipients);
 
+        if ($channel === 'EMAIL') {
+            // FREE email broadcast via PHP mail()
+            $totalCost = 0;
+            $sent = 0;
+            $failed = 0;
+            $subject = APP_NAME . ' - ' . ucfirst(strtolower($category)) . ' Announcement';
+            $fromAddr = defined('ADMIN_EMAIL') ? ADMIN_EMAIL : 'noreply@bidduang.gov.ph';
+            $htmlBody = "<html><body style='font-family:Arial,sans-serif;'>" . nl2br(htmlspecialchars($message)) .
+                "<hr><p style='font-size:12px;color:#666;'>Barangay Bidduang Management Portal</p></body></html>";
+            $headers = "From: " . $fromAddr . "
+\n" .
+                       "Reply-To: " . $fromAddr . "
+\n" .
+                       "Content-Type: text/html; charset=UTF-8
+\n";
+            foreach ($recipients as $recipient) {
+                if (empty($recipient['email'])) {
+                    $failed++;
+                    continue;
+                }
+                if (@mail($recipient['email'], $subject, $htmlBody, $headers)) {
+                    $sent++;
+                } else {
+                    $failed++;
+                    error_log('Broadcast email failed to: ' . $recipient['email']);
+                }
+            }
+            $finalStatus = ($sent > 0) ? 'COMPLETED' : 'FAILED';
+            $stmt = $pdo->prepare("UPDATE broadcasts SET recipient_count = ?, cost = 0, status = ? WHERE id = ?");
+            $stmt->execute([$recipientCount, $finalStatus, $broadcastId]);
+
+            AuditLogger::log('CREATE', 'Broadcast', $broadcastId, null, [
+                'channel' => 'EMAIL',
+                'category' => $category,
+                'recipient_count' => $recipientCount,
+                'sent' => $sent,
+                'failed' => $failed,
+                'total_cost' => 0,
+                'status' => $finalStatus,
+            ]);
+
+            return [
+                'success' => true,
+                'broadcast_id' => $broadcastId,
+                'channel' => 'EMAIL',
+                'recipient_count' => $recipientCount,
+                'sent' => $sent,
+                'failed' => $failed,
+                'total_cost' => '0.00',
+                'message' => 'Email broadcast sent (free)',
+            ];
+        }
+
+        // ---- SMS channel (paid) ----
         // Calculate cost
         $gateway = SMSGateway::getInstance();
         $costInfo = $gateway->calculateCost($message, $recipientCount);
@@ -175,6 +234,7 @@ function handleSend(): array
         }
 
         AuditLogger::log('CREATE', 'Broadcast', $broadcastId, null, [
+            'channel' => 'SMS',
             'category' => $category,
             'recipient_count' => $recipientCount,
             'total_cost' => $totalCost,
@@ -191,6 +251,7 @@ function handleSend(): array
         return [
             'success' => true,
             'broadcast_id' => $broadcastId,
+            'channel' => 'SMS',
             'recipient_count' => $recipientCount,
             'total_cost' => number_format($totalCost, 2, '.', ','),
             'message' => 'Broadcast queued for sending',
@@ -450,14 +511,14 @@ function getAudienceRecipients(array $filter): array
     // SMS delivery still filters by phone at send time via the loop guard in handleSend().
     if ($scope === 'all' || $scope === 'all_residents') {
         $stmt = $pdo->query("
-            SELECT id as resident_id, CONCAT(first_name, ' ', last_name) as full_name, COALESCE(phone_number, contact_number) as phone
+            SELECT id as resident_id, CONCAT(first_name, ' ', last_name) as full_name, COALESCE(phone_number, contact_number) as phone, email
             FROM residents
         ");
         $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } elseif ($scope === 'purok' && !empty($puroks)) {
         $placeholders = str_repeat('?,', count($puroks) - 1) . '?';
         $stmt = $pdo->prepare("
-            SELECT r.id as resident_id, CONCAT(r.first_name, ' ', r.last_name) as full_name, COALESCE(r.phone_number, r.contact_number) as phone
+            SELECT r.id as resident_id, CONCAT(r.first_name, ' ', r.last_name) as full_name, COALESCE(r.phone_number, r.contact_number) as phone, r.email
             FROM residents r
             WHERE r.status = 'Active'
               AND r.purok_id IN ($placeholders)
@@ -467,7 +528,7 @@ function getAudienceRecipients(array $filter): array
     } elseif ($scope === 'sector' && !empty($sectors)) {
         $where = buildSectorWhere($sectors);
         $stmt = $pdo->prepare("
-            SELECT r.id as resident_id, CONCAT(r.first_name, ' ', r.last_name) as full_name, COALESCE(r.phone_number, r.contact_number) as phone
+            SELECT r.id as resident_id, CONCAT(r.first_name, ' ', r.last_name) as full_name, COALESCE(r.phone_number, r.contact_number) as phone, r.email
             FROM residents r
             WHERE r.status = 'Active'
               AND ($where)

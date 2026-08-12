@@ -472,6 +472,7 @@ async function executeSend() {
 
     const payload = {
         action: 'send',
+        channel: 'EMAIL',
         category: currentCategory,
         title: title,
         message: message,
@@ -531,6 +532,7 @@ async function executeSchedule() {
 
     const payload = {
         action: 'schedule',
+        channel: 'EMAIL',
         category: currentCategory,
         title: title,
         message: message,

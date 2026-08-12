@@ -188,7 +188,7 @@ try {
         <div class="page-header">
             <div>
                 <h1><i class="fas fa-tower-broadcast"></i> Broadcast Manager</h1>
-                <p>Create and send SMS broadcasts to residents</p>
+                <p>Create and send free email announcements to residents</p>
             </div>
         </div>
 
@@ -197,11 +197,9 @@ try {
         <div class="card">
             <div class="card-header">
                 <h2>Broadcast Creator</h2>
-            <?php if (!empty($smsSimulation)): ?>
-            <div class="alert alert-warning" style="margin-bottom: 16px; padding: 10px 14px; border-radius: 8px; background: #fff7e6; border: 1px solid #ffd591; color: #874d00; font-size: 13px;">
-                <i class="fas fa-info-circle"></i> <strong>Demo mode:</strong> no live SMS gateway is configured, so messages are marked <em>delivered</em> in the system but are <strong>not sent to real phones</strong>. To send real SMS, add Semaphore / ItexMo / Twilio credentials in <code>gateway_credentials</code> (or set <code>SEMAPHORE_API_KEY</code>) and run <code>php bin/broadcast-worker.php</code> as a daemon.
-            </div>
-            <?php endif; ?>
+                <div class="alert alert-success" style="margin-bottom: 16px; padding: 10px 14px; border-radius: 8px; background: #e8f5e9; border: 1px solid #a5d6a7; color: #1b5e20; font-size: 13px;">
+                    <i class="fas fa-envelope"></i> <strong>Free email broadcast:</strong> announcements are sent to residents' emails at no cost (no SMS charges).
+                </div>
             </div>
             <div class="card-body">
                 <div class="broadcast-manager">
@@ -349,11 +347,10 @@ try {
 
                             <div class="confirm-summary">
                                 <table>
+                                    <tr><td>Channel:</td><td><span style="color:#1b5e20;font-weight:600;"><i class="fas fa-envelope"></i> Email (Free)</span></td></tr>
                                     <tr><td>Category:</td><td id="sumCategory">Custom</td></tr>
                                     <tr><td>Total Recipients:</td><td id="sumRecipients">0</td></tr>
-                                    <tr><td>Credits per SMS:</td><td id="sumCreditsPerSms">1</td></tr>
-                                    <tr><td>Total SMS Credits:</td><td id="sumTotalCredits">0</td></tr>
-                                    <tr><td>Estimated Cost:</td><td id="sumEstimatedCost">₱0.00</td></tr>
+                                    <tr><td>Cost:</td><td style="color:#1b5e20;font-weight:600;">₱0.00 (Free)</td></tr>
                                 </table>
                             </div>
 

@@ -116,7 +116,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
     
     $identifier = trim($_POST['identifier'] ?? '');
-    $contactMethod = $_POST['contact_method'] ?? 'email';
     
     if (empty($identifier)) {
         $response['message'] = 'Please enter your username or email address.';
@@ -140,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $resetExpiry = date('Y-m-d H:i:s', time() + 3600);
         $pdo->prepare("UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?")->execute([$resetToken, $resetExpiry, $user['id']]);
         
-        if ($contactMethod === 'email' && $user['email']) {
+        if ($user['email']) {
             $isLocal = (strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || ($_SERVER['HTTP_HOST'] ?? '') === '127.0.0.1');
             $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
             $resetUrl = $protocol . $_SERVER['HTTP_HOST'] . BASE_URL . '/reset-password.php?token=' . $resetToken;
@@ -154,33 +153,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     <p>This link expires in 1 hour.</p>
                     <p>If you didn't request this, please ignore this email.</p>
                 </body></html>";
-            $headers = "From: " . ADMIN_EMAIL . "\r\n";
-            $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+            $headers = "From: " . ADMIN_EMAIL . "
+\n";
+            $headers .= "Content-Type: text/html; charset=UTF-8
+\n";
             if (!mail($user['email'], $subject, $message, $headers)) {
                 error_log("Password reset email failed to send to {$user['email']}. Reset URL: {$resetUrl}");
             }
         }
         
-        if ($contactMethod === 'sms' && !empty($user['phone_number'])) {
-            $resetCode = substr($resetToken, 0, 6);
-            $pdo->prepare("UPDATE users SET reset_code = ?, reset_code_expiry = ? WHERE id = ?")->execute([$resetCode, $resetExpiry, $user['id']]);
-
-            require_once __DIR__ . '/lib/sms/SmsTriggers.php';
-            require_once __DIR__ . '/lib/sms/SmsLogger.php';
-            require_once __DIR__ . '/lib/sms/SmsService.php';
-            require_once __DIR__ . '/lib/sms/SemaphoreSmsProvider.php';
-            try {
-                SmsTriggers::sendNow(
-                    $user['phone_number'],
-                    'PasswordReset',
-                    "Your Barangay Bidduang password reset code is: $resetCode. Expires in 1 hour."
-                );
-            } catch (Throwable $e) {
-                error_log('SMS reset code failed: ' . $e->getMessage());
-            }
-        }
-        
-        log_audit('password_reset_request', 'user', $user['id'], null, ['method' => $contactMethod]);
+        log_audit('password_reset_request', 'user', $user['id'], null, ['method' => 'email']);
     }
     
     $response = [
@@ -335,18 +317,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                placeholder="Enter your username or email" autocomplete="username">
                         <span class="error-msg" id="forgotIdentifierError"></span>
                     </div>
-                    <div class="form-group">
-                        <label>Reset Method</label>
-                        <div class="reset-method-options" style="display:flex; gap:.5rem;">
-                            <label class="radio-option" style="flex:1; display:flex; align-items:center; gap:.4rem; border:1.5px solid #E2E8F0; border-radius:12px; padding:.6rem .8rem; cursor:pointer;">
-                                <input type="radio" name="contact_method" value="email" checked> <span><i class="fas fa-envelope"></i> Email</span>
-                            </label>
-                            <label class="radio-option" style="flex:1; display:flex; align-items:center; gap:.4rem; border:1.5px solid #E2E8F0; border-radius:12px; padding:.6rem .8rem; cursor:pointer;">
-                                <input type="radio" name="contact_method" value="sms"> <span><i class="fas fa-sms"></i> SMS</span>
-                            </label>
-                        </div>
-                        <span class="error-msg" id="contactMethodError"></span>
-                    </div>
+                    <p style="font-size:.85rem; color:var(--muted); margin-bottom:.5rem;">
+                        <i class="fas fa-envelope"></i> A password reset link will be sent to your account email (free).
+                    </p>
                     <button type="submit" class="btn-submit" id="forgotSubmitBtn">
                         <i class="fas fa-paper-plane"></i> Send Reset Link
                     </button>
@@ -501,12 +474,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         forgotForm?.addEventListener('submit', function(e){
             e.preventDefault();
             const identifier = document.getElementById('forgotIdentifier').value.trim();
-            const contactMethod = document.querySelector('input[name="contact_method"]:checked')?.value || 'email';
             if (!identifier){ showAlert(forgotAlert,'Please enter your username or email.','error'); return; }
             const submitBtn = document.getElementById('forgotSubmitBtn');
             submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
             const fd = new FormData();
-            fd.append('action','forgot_password'); fd.append('identifier',identifier); fd.append('contact_method',contactMethod);
+            fd.append('action','forgot_password'); fd.append('identifier',identifier);
             fd.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
             fetch(window.location.href, { method:'POST', body: fd })
                 .then(r=>r.json()).then(data=>{
