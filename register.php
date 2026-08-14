@@ -128,8 +128,7 @@
         <title>Register - Barangay Bidduang</title>
         <link rel="shortcut icon" type="image/png" href="assets/img/Brgy_Bidduang.png">
         <link rel="stylesheet" href="assets/css/fontawesome.min.css">
-        <link rel="stylesheet" href="assets/css/login.css">
-        <link rel="stylesheet" href="assets/css/login-fix.css">
+        <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
     </head>
     <body>

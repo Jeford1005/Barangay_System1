@@ -140,14 +140,16 @@ $action = $_POST['action'] ?? ($_GET['action'] ?? '');
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accounts Barangay Bidduang Portal</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
 </head>
 <body>
 <div class="app">
     <?php include __DIR__ . '/views/sidebar.php'; ?>
+        
 
     <main class="main-content">
+        <?php $variant = 'admin'; include __DIR__ . '/views/mobile-topbar.php'; ?>
         <div class="page-header">
             <div>
                 <h1><i class="fas fa-user-gear"></i> Account Management</h1>
@@ -194,18 +196,18 @@ $action = $_POST['action'] ?? ($_GET['action'] ?? '');
             <div class="card-header">
                 <h2>User Accounts</h2>
                 <div class="toolbar">
-                    <form method="GET" class="search-box" style="flex:1;min-width:220px;">
+                    <form method="GET" class="search-box" class="flex-1">
                         <input type="hidden" name="role" value="<?= esc($roleFilter) ?>">
                         <i class="fas fa-search"></i>
                         <input type="text" name="search" placeholder="Search accounts..." value="<?= esc($search) ?>">
                     </form>
-                    <select class="form-control" style="width:auto;min-width:130px;" onchange="window.location.href='?role='+this.value+'&search=<?= urlencode($search) ?>'">
+                    <select class="form-control" class="w-auto" onchange="window.location.href='?role='+this.value+'&search=<?= urlencode($search) ?>'">
                         <option value="">All Roles</option>
                         <option value="admin" <?= $roleFilter==='admin'?'selected':'' ?>>Admin</option>
                         <option value="official" <?= $roleFilter==='official'?'selected':'' ?>>Official</option>
                         <option value="staff" <?= $roleFilter==='staff'?'selected':'' ?>>Staff</option>
                     </select>
-                    <button class="btn btn-primary" onclick="openModal('accountModal')"><i class="fas fa-plus"></i> Add Account</button>
+                    <button class="btn btn-create" onclick="addAccount()"><i class="fas fa-plus"></i> Add Account</button>
                 </div>
             </div>
 
@@ -228,7 +230,7 @@ $action = $_POST['action'] ?? ($_GET['action'] ?? '');
                                 <td><?= $u['last_login'] ? date('M d, Y h:i A', strtotime($u['last_login'])) : 'Never' ?></td>
                                 <td>
                                     <div class="actions">
-                                        <button class="btn btn-sm btn-info" onclick="editAccount(<?= $u['id'] ?>)"><i class="fas fa-pen-to-square"></i></button>
+                                        <button class="btn btn-sm btn-update" onclick="editAccount(<?= $u['id'] ?>)"><i class="fas fa-pen-to-square"></i></button>
                                         <button class="btn btn-sm btn-warning" onclick="resetPassword(<?= $u['id'] ?>, '<?= esc(addslashes($u['username'])) ?>')"><i class="fas fa-key"></i></button>
                                         <?php if ($u['id'] != $_SESSION['user_id']): ?>
                                             <button class="btn btn-sm btn-danger" onclick="deleteAccount(<?= $u['id'] ?>, '<?= esc(addslashes($u['username'])) ?>')"><i class="fas fa-trash"></i></button>
@@ -247,7 +249,7 @@ $action = $_POST['action'] ?? ($_GET['action'] ?? '');
 </div>
 
 <div class="modal-backdrop" id="accountModal">
-    <div class="modal" style="max-width:600px;">
+    <div class="modal" class="max-600">
         <div class="modal-header">
             <h3 id="modalTitle">Add Account</h3>
             <button class="modal-close" onclick="closeModal('accountModal')">&times;</button>
@@ -261,7 +263,7 @@ $action = $_POST['action'] ?? ($_GET['action'] ?? '');
                                 <div class="form-group"><label for="fullName">Full Name *</label><input type="text" name="full_name" id="fullName" class="form-control" required autocomplete="name"></div>
                                 <div class="form-group"><label for="email">Email *</label><input type="email" name="email" id="email" class="form-control" required autocomplete="email"></div>
                                 <div class="form-group"><label for="password">Password <?= $action==='add'?'*':'(leave blank to keep current)' ?></label><input type="password" name="password" id="password" class="form-control" <?= $action==='add'?'required':'' ?> autocomplete="new-password"></div>
-                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                                <div class="grid-2">
                                     <div class="form-group">
                                         <label for="role">Role *</label>
                                         <select name="role" id="role" class="form-control" required>
@@ -287,14 +289,14 @@ $action = $_POST['action'] ?? ($_GET['action'] ?? '');
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('accountModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Account</button>
+                <button type="submit" class="btn btn-create"><i class="fas fa-save"></i> Save Account</button>
             </div>
         </form>
     </div>
 </div>
 
 <div class="modal-backdrop" id="deleteModal">
-    <div class="modal" style="max-width:450px;">
+    <div class="modal" class="max-450">
         <div class="modal-header">
             <h3><i class="fas fa-warning" style="color:var(--danger);"></i> Confirm Delete</h3>
             <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>
@@ -317,6 +319,16 @@ $action = $_POST['action'] ?? ($_GET['action'] ?? '');
 <script>
 function openModal(id) { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+function addAccount() {
+    document.getElementById('formAction').value = 'add';
+    document.getElementById('accountId').value = '';
+    document.getElementById('modalTitle').textContent = 'Add Account';
+    document.getElementById('accountForm').reset();
+    document.getElementById('role').value = 'admin';
+    document.getElementById('accountStatus').value = 'active';
+    document.getElementById('residentId').value = '';
+    openModal('accountModal');
+}
 function editAccount(id) {
     fetch('<?= BASE_URL ?>/api/user.php?id=' + id).then(r => r.json()).then(data => {
         if (!data.id) return alert('Not found');

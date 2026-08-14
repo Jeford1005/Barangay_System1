@@ -56,7 +56,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         try { SmsTriggers::hearingScheduled((int)$id, $hearing_date, $hearing_time ?: 'TBD', $lupon_desk); } catch (Throwable $e) { error_log('SMS hearing trigger: ' . $e->getMessage()); }
                     }
                     log_audit('update', 'blotter_case', $id, $oldValues);
-                    $message = 'Blotter case updated successfully.';
+                    $_SESSION['flash_message'] = 'Blotter case updated successfully.';
+                    header('Location: blotter.php');
+                    exit;
+                } elseif ($action === 'edit' && !$id) {
+                    $error = 'Cannot update: missing record ID.';
                 }
             }
         } elseif ($action === 'delete' && isset($_POST['id'])) {
@@ -127,14 +131,16 @@ $currentUser = current_user();
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blotter - Barangay Bidduang Portal</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
 </head>
 <body>
 <div class="app">
     <?php include __DIR__ . '/views/sidebar.php'; ?>
+        
 
     <main class="main-content">
+        <?php $variant = 'admin'; include __DIR__ . '/views/mobile-topbar.php'; ?>
         <div class="page-header">
             <div>
                 <h1><i class="fas fa-scale-balanced"></i> Blotter & Mediation</h1>
@@ -159,15 +165,15 @@ $currentUser = current_user();
         <?php endif; ?>
 
         <!-- Katarungang Stages Legend -->
-        <div class="card" style="background:linear-gradient(135deg,#f0f8ff,#fff);border-left:5px solid var(--secondary);">
-            <h2 style="font-size:18px;margin:0 0 12px;"><i class="fas fa-info"></i> Katarungang Pambarangay Stages</h2>
-            <div style="display:flex;gap:15px;flex-wrap:wrap;">
-                <span class="badge badge-info">1. Open</span>
-                <span class="badge badge-warning">2. Under Mediation</span>
-                <span class="badge badge-success">3. Conciliated</span>
-                <span class="badge badge-secondary">4. Arbitrated</span>
-                <span class="badge badge-danger">5. Escalated</span>
-                <span class="badge badge-success">6. Closed</span>
+        <div class="card info-banner">
+            <h2 class="banner-title"><i class="fas fa-info-circle"></i> Katarungang Pambarangay Stages</h2>
+            <div class="banner-stages">
+                <span class="stage-item stage-open"><i class="fas fa-folder-open"></i> 1. Open</span>
+                <span class="stage-item stage-mediation"><i class="fas fa-handshake"></i> 2. Under Mediation</span>
+                <span class="stage-item stage-conciliated"><i class="fas fa-circle-check"></i> 3. Conciliated</span>
+                <span class="stage-item stage-arbitrated"><i class="fas fa-gavel"></i> 4. Arbitrated</span>
+                <span class="stage-item stage-escalated"><i class="fas fa-exclamation-triangle"></i> 5. Escalated</span>
+                <span class="stage-item stage-closed"><i class="fas fa-lock"></i> 6. Closed</span>
             </div>
         </div>
 
@@ -194,12 +200,12 @@ $currentUser = current_user();
             <div class="card-header">
                 <h2>Case Records</h2>
                 <div class="toolbar">
-                    <form method="GET" class="search-box" style="flex:1;min-width:220px;">
+                    <form method="GET" class="search-box" class="flex-1">
                         <input type="hidden" name="status" value="<?= esc($statusFilter) ?>">
                         <i class="fas fa-search"></i>
                         <input type="text" name="search" placeholder="Search cases..." value="<?= esc($search) ?>">
                     </form>
-                    <select class="form-control" style="width:auto;min-width:150px;" onchange="window.location.href='?status='+this.value+'&search=<?= urlencode($search) ?>'">
+                    <select class="form-control" class="w-auto" onchange="window.location.href='?status='+this.value+'&search=<?= urlencode($search) ?>'">
                         <option value="">All Status</option>
                         <option value="Open" <?= $statusFilter==='Open'?'selected':'' ?>>Open</option>
                         <option value="Under Mediation" <?= $statusFilter==='Under Mediation'?'selected':'' ?>>Under Mediation</option>
@@ -208,7 +214,7 @@ $currentUser = current_user();
                         <option value="Escalated" <?= $statusFilter==='Escalated'?'selected':'' ?>>Escalated</option>
                         <option value="Closed" <?= $statusFilter==='Closed'?'selected':'' ?>>Closed</option>
                     </select>
-                    <button class="btn btn-primary" onclick="openModal('caseModal')"><i class="fas fa-plus"></i> File Case</button>
+                    <button class="btn btn-create" onclick="openModal('caseModal')"><i class="fas fa-plus"></i> File Case</button>
                 </div>
             </div>
 
@@ -233,7 +239,7 @@ $currentUser = current_user();
                                 <td><?= esc($c['official_name'] ?? '-') ?></td>
                                 <td>
                                     <div class="actions">
-                                        <button class="btn btn-sm btn-info" onclick="editCase(<?= $c['id'] ?>)"><i class="fas fa-pen-to-square"></i></button>
+                                        <button class="btn btn-sm btn-update" onclick="editCase(<?= $c['id'] ?>)"><i class="fas fa-pen-to-square"></i></button>
                                         <button class="btn btn-sm btn-danger" onclick="deleteCase(<?= $c['id'] ?>, '<?= esc(addslashes($c['case_number'])) ?>')"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </td>
@@ -249,7 +255,7 @@ $currentUser = current_user();
 </div>
 
 <div class="modal-backdrop" id="caseModal">
-    <div class="modal" style="max-width:750px;">
+    <div class="modal" class="max-750">
         <div class="modal-header">
             <h3 id="modalTitle">File New Case</h3>
             <button class="modal-close" onclick="closeModal('caseModal')">&times;</button>
@@ -259,7 +265,7 @@ $currentUser = current_user();
                 <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                 <input type="hidden" name="action" id="formAction" value="add">
                 <input type="hidden" name="id" id="caseId">
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                <div class="grid-3">
                     <div class="form-group"><label for="caseNumber">Case Number *</label> <input type="text" name="case_number" id="caseNumber" class="form-control" required></div>
                     <div class="form-group">
                         <label for="caseType">Case Type *</label> <select name="case_type" id="caseType" class="form-control" required>
@@ -272,12 +278,12 @@ $currentUser = current_user();
                         </select>
                     </div>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                <div class="grid-3">
                     <div class="form-group"><label for="filingDate">Filing Date *</label> <input type="date" name="filing_date" id="filingDate" class="form-control" required></div>
                     <div class="form-group"><label for="incidentDate">Incident Date *</label> <input type="date" name="incident_date" id="incidentDate" class="form-control" required></div>
                     <div class="form-group"><label for="incidentTime">Incident Time</label> <input type="time" name="incident_time" id="incidentTime" class="form-control"></div>
                 </div>
-                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                <div class="form-row" class="grid-3">
                     <div class="form-group"><label for="hearingDate">Hearing Date</label> <input type="date" name="hearing_date" id="hearingDate" class="form-control"></div>
                     <div class="form-group"><label for="hearingTime">Hearing Time</label> <input type="time" name="hearing_time" id="hearingTime" class="form-control"></div>
                     <div class="form-group"><label for="luponDesk">Lupon Desk</label> <input type="text" name="lupon_desk" id="luponDesk" class="form-control" value="Lupon Desk"></div>
@@ -286,7 +292,7 @@ $currentUser = current_user();
                 <div class="form-group"><label for="involvedParties">Involved Parties *</label> <textarea name="involved_parties" id="involvedParties" class="form-control" rows="2" required placeholder="Names and roles of involved parties"></textarea></div>
                 <div class="form-group"><label for="narrative">Narrative *</label> <textarea name="narrative" id="narrative" class="form-control" rows="4" required placeholder="Detailed account of the incident"></textarea></div>
                 <div class="form-group"><label for="resolution">Resolution</label> <textarea name="resolution" id="resolution" class="form-control" rows="3" placeholder="Resolution details if available"></textarea></div>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                <div class="grid-3">
                     <div class="form-group">
                         <label for="complainantId">Complainant</label> <select name="complainant_id" id="complainantId" class="form-control">
                             <option value="">Select Complainant</option>
@@ -316,14 +322,14 @@ $currentUser = current_user();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('caseModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Case</button>
+                <button type="submit" class="btn btn-create"><i class="fas fa-save"></i> Save Case</button>
             </div>
         </form>
     </div>
 </div>
 
 <div class="modal-backdrop" id="deleteModal">
-    <div class="modal" style="max-width:450px;">
+    <div class="modal" class="max-450">
         <div class="modal-header">
             <h3><i class="fas fa-warning" style="color:var(--danger);"></i> Confirm Delete</h3>
             <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>

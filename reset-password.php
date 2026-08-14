@@ -69,8 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValid) {
     <title>Reset Password - Barangay Bidduang</title>
     <link rel="shortcut icon" type="image/png" href="assets/img/Brgy_Bidduang.png">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
-    <link rel="stylesheet" href="assets/css/login.css">
-    <link rel="stylesheet" href="assets/css/login-fix.css">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
 </head>
 <body>
@@ -145,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValid) {
                         <span class="error-msg" id="confirmPasswordError"></span>
                     </div>
 
-                    <button type="submit" class="btn-submit" id="resetSubmitBtn" style="width:100%;">
+                    <button type="submit" class="btn-submit" id="resetSubmitBtn" class="w-full">
                         <i class="fas fa-save"></i> Reset Password
                     </button>
                 </form>
@@ -171,59 +170,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValid) {
         const strengthBar = document.getElementById('strengthFill');
         const strengthText = document.getElementById('strengthText');
         const strengthContainer = document.getElementById('passwordStrength');
-        
+
+        if (!newPassword || !confirmPassword || !form) return;
+
         // Password strength meter
         newPassword.addEventListener('input', function() {
             const password = this.value;
-            strengthContainer.style.display = password.length > 0 ? 'block' : 'none';
-            
+            if (strengthContainer) strengthContainer.style.display = password.length > 0 ? 'block' : 'none';
+
             let strength = 0;
             let feedback = '';
-            
+
             if (password.length >= 8) strength += 25;
             if (/[A-Z]/.test(password)) strength += 25;
             if (/[a-z]/.test(password)) strength += 15;
             if (/[0-9]/.test(password)) strength += 20;
             if (/[^A-Za-z0-9]/.test(password)) strength += 15;
-            
+
             strength = Math.min(100, strength);
-            
-            strengthBar.style.width = strength + '%';
-            strengthBar.style.backgroundColor = 
-                strength < 40 ? '#dc3545' : 
-                strength < 70 ? '#ffc107' : '#28a745';
-            
+
+            if (strengthBar) {
+                strengthBar.style.width = strength + '%';
+                strengthBar.style.backgroundColor =
+                    strength < 40 ? '#dc3545' :
+                    strength < 70 ? '#ffc107' : '#28a745';
+            }
+
             if (strength < 40) feedback = 'Weak';
             else if (strength < 70) feedback = 'Fair';
             else if (strength < 90) feedback = 'Good';
             else feedback = 'Strong';
-            
-            strengthText.textContent = 'Password strength: ' + feedback;
-            strengthText.style.color = strengthBar.style.backgroundColor;
+
+            if (strengthText) {
+                strengthText.textContent = 'Password strength: ' + feedback;
+                strengthText.style.color = strengthBar ? strengthBar.style.backgroundColor : '';
+            }
         });
-        
+
         // Form validation
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const pwd = newPassword.value;
             const confirm = confirmPassword.value;
-            
+
             if (pwd.length < 8) {
                 showError('newPasswordError', 'Password must be at least 8 characters.');
                 newPassword.focus();
                 return;
             }
-            
+
             if (pwd !== confirm) {
                 showError('confirmPasswordError', 'Passwords do not match.');
                 confirmPassword.focus();
                 return;
             }
-            
+
             // Submit form
             const formData = new FormData(form);
-            
+
             fetch(window.location.href, {
                 method: 'POST',
                 body: formData
@@ -237,7 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValid) {
                 showError('confirmPasswordError', 'An error occurred. Please try again.');
             });
         });
-        
+
         function showError(elementId, message) {
             const el = document.getElementById(elementId);
             if (el) {

@@ -106,14 +106,16 @@ if ($view && $params) {
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports - Barangay Bidduang Portal</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
 </head>
 <body>
 <div class="app">
     <?php include __DIR__ . '/views/sidebar.php'; ?>
+        
 
     <main class="main-content">
+        <?php $variant = 'admin'; include __DIR__ . '/views/mobile-topbar.php'; ?>
         <div class="page-header">
             <div>
                 <h1><i class="fas fa-chart-bar"></i> Reports Hub</h1>
@@ -220,7 +222,7 @@ if ($view && $params) {
                             <option value="health">Health Records Summary</option>
                         </select>
                     </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="grid-2">
                         <div class="form-group"><label>Date From</label><input type="date" name="date_from" class="form-control" value="<?= date('Y-01-01') ?>"></div>
                         <div class="form-group"><label>Date To</label><input type="date" name="date_to" class="form-control" value="<?= date('Y-m-t') ?>"></div>
                     </div>
@@ -262,7 +264,7 @@ if ($view && $params) {
                             <option value="households">Households</option>
                         </select>
                     </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="grid-2">
                         <div class="form-group"><label>Date From</label><input type="date" name="date_from" class="form-control" value="<?= date('Y-01-01') ?>"></div>
                         <div class="form-group"><label>Date To</label><input type="date" name="date_to" class="form-control" value="<?= date('Y-m-t') ?>"></div>
                     </div>

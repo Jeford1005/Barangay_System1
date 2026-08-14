@@ -39,7 +39,7 @@ try {
 } catch (PDOException $e) { /* table may not exist yet */ }
 
 try {
-    $metrics['blotter'] = (int)$pdo->query("SELECT COUNT(*) FROM blotter_reports WHERE status = 'open'")->fetchColumn();
+    $metrics['blotter'] = (int)$pdo->query("SELECT COUNT(*) FROM blotter_cases WHERE status = 'Open'")->fetchColumn();
 } catch (PDOException $e) { /* table may not exist yet */ }
 
 try {
@@ -65,13 +65,13 @@ $barWidths = [
 $trendQueries = [
     'residents' => "SELECT COUNT(*) FROM residents WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)",
     'documents' => "SELECT COUNT(*) FROM document_requests WHERE status = 'pending' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)",
-    'blotter'   => "SELECT COUNT(*) FROM blotter_reports WHERE status = 'open' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)",
+    'blotter'   => "SELECT COUNT(*) FROM blotter_cases WHERE status = 'Open' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)",
     'welfare'   => "SELECT COUNT(*) FROM welfare_requests WHERE status = 'pending' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)",
 ];
 $prevTrendQueries = [
     'residents' => "SELECT COUNT(*) FROM residents WHERE created_at >= DATE_SUB(NOW(), INTERVAL 60 DAY) AND created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)",
     'documents' => "SELECT COUNT(*) FROM document_requests WHERE status = 'pending' AND created_at >= DATE_SUB(NOW(), INTERVAL 60 DAY) AND created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)",
-    'blotter'   => "SELECT COUNT(*) FROM blotter_reports WHERE status = 'open' AND created_at >= DATE_SUB(NOW(), INTERVAL 60 DAY) AND created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)",
+    'blotter'   => "SELECT COUNT(*) FROM blotter_cases WHERE status = 'Open' AND created_at >= DATE_SUB(NOW(), INTERVAL 60 DAY) AND created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)",
     'welfare'   => "SELECT COUNT(*) FROM welfare_requests WHERE status = 'pending' AND created_at >= DATE_SUB(NOW(), INTERVAL 60 DAY) AND created_at < DATE_SUB(NOW(), INTERVAL 30 DAY)",
 ];
 
@@ -110,6 +110,7 @@ foreach ($chartData as $row) {
     $chartValues[(int)$row['m'] - 1] = (int)$row['c'];
 }
 $maxChart = max($chartValues) ?: 1;
+$hasDocData = array_sum($chartValues) > 0;
 
 // Document status distribution for doughnut chart
 $statusData = ['pending' => 0, 'approved' => 0, 'rejected' => 0];
@@ -128,13 +129,78 @@ $blotterMonthly = array_fill(0, 12, 0);
 try {
     $stmt = $pdo->query("
         SELECT MONTH(created_at) as m, COUNT(*) as c
-        FROM blotter_reports
+        FROM blotter_cases
         WHERE YEAR(created_at) = YEAR(CURDATE())
         GROUP BY MONTH(created_at)
     ");
     foreach ($stmt->fetchAll() as $row) {
         $blotterMonthly[(int)$row['m'] - 1] = (int)$row['c'];
     }
+} catch (PDOException $e) { /* table may not exist yet */ }
+$hasBlotterData = array_sum($blotterMonthly) > 0;
+
+// Monthly resident registrations for trend bar chart
+$residentMonthly = array_fill(0, 12, 0);
+try {
+    $stmt = $pdo->query("
+        SELECT MONTH(created_at) as m, COUNT(*) as c
+        FROM residents
+        WHERE YEAR(created_at) = YEAR(CURDATE())
+        GROUP BY MONTH(created_at)
+    ");
+    foreach ($stmt->fetchAll() as $row) {
+        $residentMonthly[(int)$row['m'] - 1] = (int)$row['c'];
+    }
+} catch (PDOException $e) { /* table may not exist yet */ }
+$hasResidentData = array_sum($residentMonthly) > 0;
+
+
+// "Needs attention" — oldest pending document request + oldest open blotter case
+$oldestPendingDoc = null;
+try {
+    $stmt = $pdo->query("
+        SELECT dr.id, dr.document_type, dr.created_at,
+               CONCAT(r.first_name, ' ', r.last_name) AS resident_name
+        FROM document_requests dr
+        LEFT JOIN residents r ON r.id = dr.resident_id
+        WHERE dr.status = 'Pending'
+        ORDER BY dr.created_at ASC
+        LIMIT 1
+    ");
+    $oldestPendingDoc = $stmt->fetch();
+} catch (PDOException $e) { /* table may not exist yet */ }
+
+$oldestOpenBlotter = null;
+try {
+    $stmt = $pdo->query("
+        SELECT id, case_number, case_type, created_at
+            FROM blotter_cases
+            WHERE status = 'Open'
+            ORDER BY created_at ASC
+            LIMIT 1
+    ");
+    $oldestOpenBlotter = $stmt->fetch();
+} catch (PDOException $e) { /* table may not exist yet */ }
+
+// Officials active/inactive split
+$officialActive = 0; $officialInactive = 0;
+try {
+    $stmt = $pdo->query("SELECT is_active, COUNT(*) AS c FROM officials GROUP BY is_active");
+    foreach ($stmt->fetchAll() as $row) {
+        if ($row['is_active']) $officialActive = (int)$row['c']; else $officialInactive = (int)$row['c'];
+    }
+} catch (PDOException $e) { /* table may not exist yet */ }
+
+// Last broadcast sent
+$lastBroadcast = null;
+try {
+    $stmt = $pdo->query("
+        SELECT id, title, sent_at
+        FROM broadcast_messages
+        ORDER BY sent_at DESC
+        LIMIT 1
+    ");
+    $lastBroadcast = $stmt->fetch();
 } catch (PDOException $e) { /* table may not exist yet */ }
 ?>
 <!DOCTYPE html>
@@ -146,7 +212,7 @@ try {
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Barangay Bidduang</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -157,6 +223,7 @@ try {
 
     <!-- Main Content -->
     <main class="main-content">
+        <?php $variant = 'admin'; include __DIR__ . '/views/mobile-topbar.php'; ?>
         <!-- Header with Greeting & Stats -->
         <div class="dashboard-header">
             <div class="header-left">
@@ -226,6 +293,60 @@ try {
                     </p>
                 </div>
                 <div class="metric-icon purple"><i class="fas fa-hand-holding-heart"></i></div>
+            </div>
+        </section>
+
+        <!-- Needs attention + Officials + Broadcast -->
+        <section class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-bell"></i> Needs Attention</h2>
+                <?php if ($oldestPendingDoc): ?>
+                    <div class="attn-row">
+                        <span class="badge badge-info">Doc</span>
+                        <div>
+                            <strong><?= esc($oldestPendingDoc['document_type']); ?></strong>
+                            <span class="mono"> — <?= esc($oldestPendingDoc['resident_name'] ?? 'Unknown'); ?></span>
+                            <div class="muted-sm">Pending since <?= date('M j, Y', strtotime($oldestPendingDoc['created_at'])); ?></div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                <?php if ($oldestOpenBlotter): ?>
+                    <div class="attn-row">
+                        <span class="badge badge-warning">Blotter</span>
+                        <div>
+                            <strong><?= esc($oldestOpenBlotter['case_number']); ?></strong>
+                            <span class="mono"> — <?= esc($oldestOpenBlotter['incident_type'] ?? ''); ?></span>
+                            <div class="muted-sm">Open since <?= date('M j, Y', strtotime($oldestOpenBlotter['created_at'])); ?></div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                <?php if (!$oldestPendingDoc && !$oldestOpenBlotter): ?>
+                    <p class="muted-sm">Nothing pending. All caught up.</p>
+                <?php endif; ?>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-user-tie"></i> Officials</h2>
+                <div class="split-row">
+                    <div class="split-item">
+                        <span class="split-num success"><?= $officialActive; ?></span>
+                        <span class="muted-sm">Active</span>
+                    </div>
+                    <div class="split-item">
+                        <span class="split-num neutral"><?= $officialInactive; ?></span>
+                        <span class="muted-sm">Inactive</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-tower-broadcast"></i> Last Broadcast</h2>
+                <?php if ($lastBroadcast): ?>
+                    <strong><?= esc($lastBroadcast['title']); ?></strong>
+                    <div class="muted-sm">Sent <?= date('M j, Y g:i A', strtotime($lastBroadcast['sent_at'])); ?></div>
+                <?php else: ?>
+                    <p class="muted-sm">No broadcasts sent yet.</p>
+                <?php endif; ?>
             </div>
         </section>
 
@@ -300,81 +421,90 @@ try {
             </div>
         </section>
 
-        <!-- Charts Grid -->
+        <!-- Analytics Grid -->
         <section class="charts-grid">
-            <div class="card">
-                <h2 class="card-title"><i class="fas fa-chart-bar"></i> Document Requests (This Year)</h2>
-                <div class="chart-container">
-                    <canvas id="documentsChart"></canvas>
+            <div class="card chart-card">
+                <div class="chart-head">
+                    <h2 class="card-title"><i class="fas fa-chart-pie"></i> Document Status</h2>
+                    <span class="chart-total"><?= array_sum($statusData) ?> total</span>
+                </div>
+                <div class="chart-container donut-wrap">
+                    <?php if (array_sum($statusData) > 0): ?>
+                        <div class="donut-box">
+                            <canvas id="statusChart"></canvas>
+                            <div class="donut-center">
+                                <strong><?= array_sum($statusData) ?></strong>
+                                <span>requests</span>
+                            </div>
+                        </div>
+                        <ul class="donut-legend">
+                            <li><span class="dot dot-warning"></span> Pending <b><?= $statusData['pending'] ?></b></li>
+                            <li><span class="dot dot-success"></span> Approved <b><?= $statusData['approved'] ?></b></li>
+                            <li><span class="dot dot-danger"></span> Rejected <b><?= $statusData['rejected'] ?></b></li>
+                        </ul>
+                    <?php else: ?>
+                        <div class="empty-state"><i class="fas fa-chart-pie"></i><h3>No requests yet</h3><p>Document status will appear here.</p></div>
+                    <?php endif; ?>
                 </div>
             </div>
-            <div class="card">
-                <h2 class="card-title"><i class="fas fa-chart-line"></i> Monthly Blotter Reports</h2>
+            <div class="card chart-card">
+                <div class="chart-head">
+                    <h2 class="card-title"><i class="fas fa-users"></i> Resident Registrations</h2>
+                    <span class="chart-sub">This Year</span>
+                </div>
                 <div class="chart-container">
-                    <canvas id="blotterChart"></canvas>
+                    <?php if ($hasResidentData): ?>
+                        <canvas id="residentsChart"></canvas>
+                    <?php else: ?>
+                        <div class="empty-state"><i class="fas fa-users"></i><h3>No registrations yet</h3><p>No residents registered this year.</p></div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <div class="card chart-card">
+                <div class="chart-head">
+                    <h2 class="card-title"><i class="fas fa-chart-line"></i> Blotter Reports</h2>
+                    <span class="chart-sub">Monthly</span>
+                </div>
+                <div class="chart-container">
+                    <?php if ($hasBlotterData): ?>
+                        <canvas id="blotterChart"></canvas>
+                    <?php else: ?>
+                        <div class="empty-state"><i class="fas fa-chart-line"></i><h3>No blotter reports filed yet</h3><p>Monthly reports will appear here once cases are logged.</p></div>
+                    <?php endif; ?>
                 </div>
             </div>
         </section>
 
-        <!-- Quick Links -->
-        <section class="card">
-            <h2 class="card-title"><i class="fas fa-bolt"></i> Quick Links</h2>
-            <div class="quick-links">
-                <a href="residents.php" class="quick-link-btn">
-                    <i class="fas fa-users"></i> Residents
-                </a>
-                <a href="documents.php" class="quick-link-btn">
-                    <i class="fas fa-file-text"></i> Documents
-                </a>
-                <a href="blotter.php" class="quick-link-btn">
-                    <i class="fas fa-clipboard-list"></i> Blotter
-                </a>
-                <a href="welfare.php" class="quick-link-btn">
-                    <i class="fas fa-hand-holding-heart"></i> Welfare
-                </a>
-                <a href="health.php" class="quick-link-btn">
-                    <i class="fas fa-heartbeat"></i> Health
-                </a>
-            </div>
-        </section>
-
-        
     </main>
     </div>
 
     <script>
+        const AXIS = '#6B7076';
+        const GRID = 'rgba(21,23,27,0.07)';
+        const FONT = "'Public Sans', system-ui, sans-serif";
         document.addEventListener('DOMContentLoaded', function() {
-            const documentsCtx = document.getElementById('documentsChart');
+            const documentsCtx = document.getElementById('residentsChart');
             if (documentsCtx) {
                 new window.Chart(documentsCtx, {
                     type: 'bar',
                     data: {
                         labels: <?= json_encode($months, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
                         datasets: [{
-                            label: 'Document Requests',
-                            data: <?= json_encode($chartValues, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
-                            backgroundColor: 'rgba(26, 92, 56, 0.75)',
-                            borderColor: '#1a5c38',
-                            borderWidth: 1,
-                            borderRadius: 6
+                            label: 'Resident Registrations',
+                            data: <?= json_encode($residentMonthly, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
+                            backgroundColor: '#E8A33D',
+                            hoverBackgroundColor: '#15171B',
+                            borderRadius: 6,
+                            maxBarThickness: 34
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
+                        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#15171B', padding: 10 } },
                         scales: {
-                            y: { 
-                                beginAtZero: true, 
-                                ticks: { 
-                                    stepSize: 1
-                                }
-                            },
-                            x: {
-                                ticks: {
-                                    font: { size: 13 }
-                                }
-                            }
+                            y: { beginAtZero: true, ticks: { stepSize: 1, color: AXIS, font: { family: FONT } }, grid: { color: GRID } },
+                            x: { ticks: { color: AXIS, font: { family: FONT, size: 12 } }, grid: { display: false } }
                         }
                     }
                 });
@@ -389,31 +519,47 @@ try {
                         datasets: [{
                             label: 'Blotter Reports',
                             data: <?= json_encode($blotterMonthly, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>,
-                            borderColor: '#dc2626',
-                            backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                            tension: 0.3,
+                            borderColor: '#15171B',
+                            backgroundColor: 'rgba(232,163,61,0.14)',
+                            tension: 0.35,
                             fill: true,
                             pointRadius: 4,
-                            pointBackgroundColor: '#dc2626'
+                            pointBackgroundColor: '#E8A33D',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
+                        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#15171B', padding: 10 } },
                         scales: {
-                            y: { 
-                                beginAtZero: true, 
-                                ticks: { 
-                                    stepSize: 1
-                                }
-                            },
-                            x: {
-                                ticks: {
-                                    font: { size: 13 }
-                                }
-                            }
+                            y: { beginAtZero: true, ticks: { stepSize: 1, color: AXIS, font: { family: FONT } }, grid: { color: GRID } },
+                            x: { ticks: { color: AXIS, font: { family: FONT, size: 12 } }, grid: { display: false } }
                         }
+                    }
+                });
+            }
+
+            const statusCtx = document.getElementById('statusChart');
+            if (statusCtx) {
+                new window.Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending', 'Approved', 'Rejected'],
+                        datasets: [{
+                            data: [<?= (int)$statusData['pending'] ?>, <?= (int)$statusData['approved'] ?>, <?= (int)$statusData['rejected'] ?>],
+                            backgroundColor: ['#9A6A0B', '#1E7A4C', '#B03A2E'],
+                            borderColor: '#fff',
+                            borderWidth: 3,
+                            hoverOffset: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '68%',
+                        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#15171B', padding: 10 } }
                     }
                 });
             }

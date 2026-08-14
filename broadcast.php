@@ -60,131 +60,88 @@ try {
     <link rel="shortcut icon" type="image/png" href="assets/img/Brgy_Bidduang.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Broadcast Manager - Barangay Bidduang Portal</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css?v=<?= ASSET_VERSION ?>">
     <style>
         .broadcast-manager { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
         .category-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .category-chip {
-            padding: 15px; text-align: center; border-radius: 10px; cursor: pointer;
-            border: 2px solid transparent; transition: all 0.2s; border-radius: 12px;
-            background: #f8f9fa; font-weight: 600; display: flex; flex-direction: column; gap: 5px;
+            padding: 15px; text-align: center; border-radius: var(--radius-card); cursor: pointer;
+            border: 2px solid var(--border); transition: all 0.2s; background: var(--surface-2);
+            font-weight: 600; display: flex; flex-direction: column; gap: 5px; color: var(--ink);
         }
-        .category-chip:hover { transform: translateY(-2px); }
-        .category-chip.active { border-color: #0d6efd; box-shadow: 0 0 15px rgba(13,110,253,0.25); }
-        .category-chip .icon { font-size: 24px; margin-bottom: 5px; }
-        .category-emergency { background: linear-gradient(135deg, #fff5f5, #ffe0e0); border-color: #dc3545; }
-        .category-emergency.active { background: linear-gradient(135deg, #f8d7da, #f5c2c7); }
-        .category-emergency .icon { color: #dc3545; }
-        .category-assembly { background: linear-gradient(135deg, #e7f1ff, #cce4ff); border-color: #0d6efd; }
-        .category-assembly.active { background: linear-gradient(135deg, #cce4ff, #99d0ff); }
-        .category-assembly .icon { color: #0d6efd; }
-        .category-health { background: linear-gradient(135deg, #e6f9ec, #c6f0d6); border-color: #198754; }
-        .category-health.active { background: linear-gradient(135deg, #c6f0d6, #9ce8af); }
-        .category-health .icon { color: #198754; }
-        .category-custom { background: linear-gradient(135deg, #f3f4f6, #e5e7eb); border-color: #6c757d; }
-        .category-custom.active { background: linear-gradient(135deg, #e5e7eb, #d1d5db); }
-        .category-custom .icon { color: #6c757d; }
+        .category-chip:hover { transform: translateY(-2px); border-color: var(--amber-500); }
+        .category-chip.active { border-color: var(--amber-500); box-shadow: 0 0 0 3px var(--amber-100); background: var(--amber-100); }
+        .category-chip .icon { font-size: 24px; margin-bottom: 5px; color: var(--muted); }
+        .category-emergency.active .icon { color: var(--danger-fg); }
+        .category-assembly.active .icon { color: var(--info-fg); }
+        .category-health.active .icon { color: var(--success-fg); }
+        .category-custom.active .icon { color: var(--amber-600); }
 
         .message-composer { position: relative; }
-        .composer-toolbar {
-            display: flex; gap: 8px; padding: 8px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px;
-            flex-wrap: wrap; align-items: center;
-        }
-        .composer-toolbar select { padding: 5px 10px; border: 1px solid #ddd; border-radius: 5px; }
-        .merge-tag-btn {
-            padding: 5px 10px; background: #e9ecef; border: 1px solid #ddd; border-radius: 5px;
-            cursor: pointer; font-size: 12px; white-space: nowrap;
-        }
-        .merge-tag-btn:hover { background: #dee2e6; }
-        #messageComposer {
-            width: 100%; min-height: 180px; padding: 12px; border: 2px dashed #ddd;
-            border-radius: 8px; font-size: 14px; resize: vertical;
-        }
-        .char-counter {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-top: 8px; font-size: 13px;
-        }
-        .char-progress { flex: 1; height: 6px; background: #e9ecef; border-radius: 3px; overflow: hidden; margin: 0 10px; }
+        .composer-toolbar { display: flex; gap: 8px; padding: 8px; background: var(--surface-2); border-radius: var(--radius-btn); margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
+        .composer-toolbar select { padding: 5px 10px; border: 1px solid var(--border); border-radius: var(--radius-input); }
+        .merge-tag-btn { padding: 5px 10px; background: var(--neutral-bg); border: 1px solid var(--border); border-radius: var(--radius-input); cursor: pointer; font-size: 12px; white-space: nowrap; }
+        .merge-tag-btn:hover { background: var(--amber-100); }
+        #messageComposer { width: 100%; min-height: 180px; padding: 12px; border: 1.5px dashed var(--border); border-radius: var(--radius-btn); font-size: 14px; resize: vertical; }
+        .char-counter { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 13px; color: var(--muted); }
+        .char-progress { flex: 1; height: 6px; background: var(--neutral-bg); border-radius: 3px; overflow: hidden; margin: 0 10px; }
         .char-progress-bar { height: 100%; border-radius: 3px; transition: width 0.3s; }
-        .char-progress-bar.good { background: #28a745; }
-        .char-progress-bar.warning { background: #ffc107; }
-        .char-progress-bar.danger { background: #dc3545; }
-        .credit-badge { background: #e9ecef; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
-
+        .char-progress-bar.good { background: var(--success-fg); }
+        .char-progress-bar.warning { background: var(--warning-fg); }
+        .char-progress-bar.danger { background: var(--danger-fg); }
+        .credit-badge { background: var(--neutral-bg); padding: 3px 10px; border-radius: var(--radius-pill); font-weight: 600; }
         .audience-panel, .dynamic-fields { margin-top: 15px; }
-        .audience-section {
-            border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 12px;
-        }
-        .audience-section h4 { margin: 0 0 10px 0; font-size: 14px; color: #495057; }
+        .audience-section { border: 1px solid var(--border); border-radius: var(--radius-card); padding: 12px; margin-bottom: 12px; }
+        .audience-section h4 { margin: 0 0 10px 0; font-size: 14px; color: var(--ink); }
         .audience-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
         .audience-options label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
-        .recipient-badge {
-            display: inline-block; background: #0d6efd; color: white; padding: 5px 15px;
-            border-radius: 20px; font-weight: 600; margin-top: 8px;
-        }
+        .recipient-badge { display: inline-block; background: var(--info-fg); color: #fff; padding: 5px 15px; border-radius: var(--radius-pill); font-weight: 600; margin-top: 8px; }
         .dynamic-field-group { margin-bottom: 10px; }
-        .dynamic-field-group label { font-size: 12px; color: #6c757d; margin-bottom: 2px; display: block; }
-        .dynamic-field-group input[type="text"], .dynamic-field-group input[type="date"], .dynamic-field-group input[type="time"] {
-            width: 100%; padding: 6px 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px;
-        }
+        .dynamic-field-group label { font-size: 12px; color: var(--muted); margin-bottom: 2px; display: block; }
+        .dynamic-field-group input[type="text"], .dynamic-field-group input[type="date"], .dynamic-field-group input[type="time"] { width: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-input); font-size: 13px; }
 
-        .send-confirmation { margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0; }
-        .confirm-summary { background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .send-confirmation { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); }
+        .confirm-summary { background: var(--surface-2); border-radius: var(--radius-card); padding: 15px; margin-bottom: 15px; }
         .confirm-summary table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .confirm-summary td { padding: 5px 0; border-bottom: 1px solid #e9ecef; }
-        .confirm-summary td:first-child { color: #6c757d; }
+        .confirm-summary td { padding: 5px 0; border-bottom: 1px solid var(--border); }
+        .confirm-summary td:first-child { color: var(--muted); }
         .confirm-summary td:last-child { font-weight: 600; }
 
         .transmission-status { margin-top: 20px; }
-        .status-progress { height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden; margin: 10px 0; }
+        .status-progress { height: 8px; background: var(--neutral-bg); border-radius: 4px; overflow: hidden; margin: 10px 0; }
         .status-progress-bar { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
         .stats-bar { display: flex; gap: 20px; margin: 10px 0; flex-wrap: wrap; }
-        .stat-item { flex: 1; text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px; }
+        .stat-item { flex: 1; text-align: center; padding: 12px; background: var(--surface-2); border-radius: var(--radius-card); }
         .stat-number { font-size: 24px; font-weight: 700; }
-        .stat-label { font-size: 12px; color: #6c757d; margin-top: 4px; }
-        .stat-sent { .stat-number { color: #198754; } }
-        .stat-delivered { .stat-number { color: #0d6efd; } }
-        .stat-failed { .stat-number { color: #dc3545; } }
-        .stat-pending { .stat-number { color: #ffc107; } }
+        .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+        .stat-sent .stat-number { color: var(--success-fg); }
+        .stat-delivered .stat-number { color: var(--info-fg); }
+        .stat-failed .stat-number { color: var(--danger-fg); }
+        .stat-pending .stat-number { color: var(--warning-fg); }
 
+        .status-badge { display: inline-block; padding: 3px 10px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 600; }
+        .badge-queued { background: var(--neutral-bg); color: var(--neutral-fg); }
+        .badge-sending { background: var(--info-bg); color: var(--info-fg); }
+        .badge-completed { background: var(--success-bg); color: var(--success-fg); }
+        .badge-failed { background: var(--danger-bg); color: var(--danger-fg); }
+        .badge-cancelled { background: var(--danger-bg); color: var(--danger-fg); }
+        .badge-scheduled { background: var(--warning-bg); color: var(--warning-fg); }
 
-        .status-badge {
-            display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
-        }
-        .badge-queued { background: #e2e3e5; color: #495057; }
-        .badge-sending { background: #cce5ff; color: #0d6efd; }
-        .badge-completed { background: #d1e7dd; color: #198754; }
-        .badge-failed { background: #f8d7da; color: #dc3545; }
-        .badge-cancelled { background: #f8d7da; color: #dc3545; }
-        .badge-scheduled { background: #fff3cd; color: #856404; }
+        /* Use design-system modal component (no local override) */
+        .json-diff { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-btn); padding: 12px; font-family: var(--font-mono); font-size: 12px; max-height: 200px; overflow-y: auto; margin: 10px 0; white-space: pre-wrap; word-break: break-all; }
 
-        .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); display: none; align-items: center;
-            justify-content: center; z-index: 9999;
-        }
-        .modal.show { display: flex; }
-        .modal-content {
-            background: white; border-radius: 12px; max-width: 700px; width: 90%;
-            max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        .modal-header { padding: 20px 25px; border-bottom: 1px solid #e0e0e0; }
-        .modal-body { padding: 20px 25px; }
-        .modal-footer { padding: 15px 25px; border-top: 1px solid #e0e0e0; }
-        .json-diff { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; margin: 10px 0; white-space: pre-wrap; word-break: break-all; }
-
-        @media (max-width: 768px) {
-            .broadcast-manager { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 768px) { .broadcast-manager { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 <div class="app">
     <!-- Sidebar -->
     <?php include __DIR__ . '/views/sidebar.php'; ?>
+        
 
     <main class="main-content">
+        <?php $variant = 'admin'; include __DIR__ . '/views/mobile-topbar.php'; ?>
         <div class="page-header">
             <div>
                 <h1><i class="fas fa-tower-broadcast"></i> Broadcast Manager</h1>
@@ -272,7 +229,7 @@ try {
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openTemplateManager()" style="margin-left:8px;">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openTemplateManager()" class="ml-8">
                                     <i class="fas fa-cog"></i> Manage Templates
                                 </button>
 
@@ -424,7 +381,7 @@ try {
         </div>
         <div class="modal-footer">
             <button class="btn btn-outline" onclick="closeModal('sendModal')">Cancel</button>
-            <button class="btn btn-primary" onclick="executeSend()" id="confirmSendBtn">
+            <button class="btn btn-create" onclick="executeSend()" id="confirmSendBtn">
                 <i class="fas fa-paper-plane"></i> Confirm & Send
             </button>
         </div>
@@ -451,7 +408,7 @@ try {
         </div>
         <div class="modal-footer">
             <button class="btn btn-outline" onclick="closeModal('scheduleModal')">Cancel</button>
-            <button class="btn btn-primary" onclick="executeSchedule()">
+            <button class="btn btn-create" onclick="executeSchedule()">
                 <i class="fas fa-calendar"></i> Schedule Broadcast
             </button>
         </div>
@@ -508,7 +465,7 @@ try {
                         <label>Message</label>
                         <textarea id="tplMessage" class="form-control" rows="4" placeholder="Type your message. Use merge tags like [First_Name], [Purok], [Meeting_Date]"></textarea>
                     </div>
-                    <button type="button" class="btn btn-primary" onclick="saveTemplate()">
+                    <button type="button" class="btn btn-create" onclick="saveTemplate()">
                         <i class="fas fa-save"></i> Save Template
                     </button>
                     <span id="tplSaveMsg" style="margin-left:10px;color:var(--success);"></span>
@@ -537,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function() {
     defaultDate.setHours(defaultDate.getHours() + 1);
     const scheduleInput = document.getElementById('scheduleDateTime');
     if (scheduleInput) {
-        const pad = (n) => n.toString().pad(0);
+        const pad = (n) => String(n).padStart(2, '0');
         const year = defaultDate.getFullYear();
         const month = pad(defaultDate.getMonth() + 1);
         const day = pad(defaultDate.getDate());

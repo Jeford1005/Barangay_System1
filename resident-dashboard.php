@@ -109,16 +109,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['capture_photo'])) {
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Dashboard - Barangay Bidduang</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
 </head>
 <body>
     <div class="app">
     <!-- Sidebar -->
-    <?php include __DIR__ . '/views/sidebar.php'; ?>
+    <?php include __DIR__ . '/views/resident-sidebar.php'; ?>
 
     <!-- Main Content -->
     <main class="main-content">
+        <?php $variant = 'resident'; include __DIR__ . '/views/mobile-topbar.php'; ?>
         <div class="page-header">
             <div>
                 <h1 class="page-title">My Dashboard</h1>

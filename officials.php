@@ -97,14 +97,16 @@ $currentUser = current_user();
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Officials - Barangay Bidduang Portal</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
 </head>
 <body>
 <div class="app">
     <?php include __DIR__ . '/views/sidebar.php'; ?>
+        
 
     <main class="main-content">
+        <?php $variant = 'admin'; include __DIR__ . '/views/mobile-topbar.php'; ?>
         <div class="page-header">
             <div>
                 <h1><i class="fas fa-user-tie"></i> Officials Directory</h1>
@@ -143,17 +145,17 @@ $currentUser = current_user();
             <div class="card-header">
                 <h2>Officials List</h2>
                 <div class="toolbar">
-                    <form method="GET" class="search-box" style="flex:1;min-width:220px;">
+                    <form method="GET" class="search-box" class="flex-1">
                         <input type="hidden" name="active" value="<?= esc($activeFilter) ?>">
                         <i class="fas fa-search"></i>
                         <input type="text" name="search" placeholder="Search by name or position..." value="<?= esc($search) ?>">
                     </form>
-                    <select class="form-control" style="width:auto;min-width:150px;" onchange="window.location.href='?active='+this.value+'&search=<?= urlencode($search) ?>'">
+                    <select class="form-control" class="w-auto" onchange="window.location.href='?active='+this.value+'&search=<?= urlencode($search) ?>'">
                         <option value="">All Status</option>
                         <option value="1" <?= $activeFilter==='1'?'selected':'' ?>>Active</option>
                         <option value="0" <?= $activeFilter==='0'?'selected':'' ?>>Inactive</option>
                     </select>
-                    <button class="btn btn-primary" onclick="openModal('officialModal')"><i class="fas fa-plus"></i> Add Official</button>
+                    <button class="btn btn-create" onclick="openModal('officialModal')"><i class="fas fa-plus"></i> Add Official</button>
                 </div>
             </div>
 
@@ -183,7 +185,7 @@ $currentUser = current_user();
                                 <td><span class="badge badge-<?= $o['is_active']?'success':'secondary' ?>"><?= $o['is_active']?'Active':'Inactive' ?></span></td>
                                 <td>
                                     <div class="actions">
-                                        <button class="btn btn-sm btn-info" onclick="editOfficial(<?= $o['id'] ?>)"><i class="fas fa-pen-to-square"></i></button>
+                                        <button class="btn btn-sm btn-update" onclick="editOfficial(<?= $o['id'] ?>)"><i class="fas fa-pen-to-square"></i></button>
                                         <button class="btn btn-sm btn-danger" onclick="deleteOfficial(<?= $o['id'] ?>, '<?= esc(addslashes($o['first_name'].' '.$o['last_name'])) ?>')"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </td>
@@ -217,12 +219,12 @@ $currentUser = current_user();
                         <small class="text-muted">JPG, PNG (Max 2MB)</small>
                     </div>
                     <div style="flex:1;min-width:250px;">
-                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                        <div class="grid-3">
                             <div class="form-group"><label for="firstName">First Name *</label> <input type="text" name="first_name" id="firstName" class="form-control" required></div>
                             <div class="form-group"><label for="middleName">Middle Name</label> <input type="text" name="middle_name" id="middleName" class="form-control"></div>
                             <div class="form-group"><label for="lastName">Last Name *</label> <input type="text" name="last_name" id="lastName" class="form-control" required></div>
                         </div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div class="grid-2">
                             <div class="form-group">
                                 <label for="suffix">Suffix</label> <select name="suffix" id="suffix" class="form-control">
                                     <option value="">None</option><option>Jr.</option><option>Sr.</option><option>II</option><option>III</option>
@@ -230,11 +232,11 @@ $currentUser = current_user();
                             </div>
                             <div class="form-group"><label for="position">Position *</label> <input type="text" name="position" id="position" class="form-control" required placeholder="e.g., Barangay Captain"></div>
                         </div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div class="grid-2">
                             <div class="form-group"><label for="contactNumber">Contact Number</label> <input type="text" name="contact_number" id="contactNumber" class="form-control"></div>
                             <div class="form-group"><label for="email">Email</label> <input type="email" name="email" id="email" class="form-control"></div>
                         </div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div class="grid-2">
                             <div class="form-group"><label for="termStart">Term Start</label> <input type="date" name="term_start" id="termStart" class="form-control"></div>
                             <div class="form-group"><label for="termEnd">Term End</label> <input type="date" name="term_end" id="termEnd" class="form-control"></div>
                         </div>
@@ -246,14 +248,14 @@ $currentUser = current_user();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('officialModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Official</button>
+                <button type="submit" class="btn btn-create"><i class="fas fa-save"></i> Save Official</button>
             </div>
         </form>
     </div>
 </div>
 
 <div class="modal-backdrop" id="deleteModal">
-    <div class="modal" style="max-width:450px;">
+    <div class="modal" class="max-450">
         <div class="modal-header">
             <h3><i class="fas fa-warning" style="color:var(--danger);"></i> Confirm Delete</h3>
             <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>

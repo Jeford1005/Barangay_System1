@@ -19,8 +19,9 @@ $links = [
     'admin-audit.php'      => ['icon' => 'fa-search-plus',    'label' => 'Audit Logs'],
     'broadcast.php'        => ['icon' => 'fa-tower-broadcast','label' => 'Broadcast Manager'],
 ];
+$user = current_user();
 ?>
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
         <img src="assets/img/Brgy_Bidduang.png" alt="Barangay Bidduang Seal">
         <div class="brand-title">Barangay Bidduang<span class="brand-sub">Management Portal</span></div>
@@ -30,11 +31,19 @@ $links = [
             <?php foreach ($links as $file => $l): ?>
                 <li>
                     <a href="<?= $file ?>" class="<?= $current === $file ? 'active' : '' ?>">
-                        <i class="fas <?= $l['icon'] ?>"></i> <?= $l['label'] ?>
+                        <i class="fas <?= $l['icon'] ?>"></i> <span><?= $l['label'] ?></span>
                     </a>
                 </li>
             <?php endforeach; ?>
-            <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
         </ul>
     </nav>
+    <div class="sidebar-account">
+        <i class="fas fa-user-circle"></i>
+        <div class="who">
+            <strong><?= esc($user['full_name'] ?? $user['username'] ?? 'User') ?></strong>
+            <span><?= ucfirst(esc($user['role'] ?? '')) ?></span>
+        </div>
+    </div>
 </aside>
+<div class="drawer-backdrop" id="drawerBackdrop"></div>

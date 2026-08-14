@@ -88,8 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Two-Factor Authentication - Barangay Bidduang</title>
     <link rel="shortcut icon" type="image/png" href="assets/img/Brgy_Bidduang.png">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
-    <link rel="stylesheet" href="assets/css/login.css">
-    <link rel="stylesheet" href="assets/css/login-fix.css">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
 </head>
 <body>
@@ -151,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <i class="fas fa-check"></i> Verify & Sign In
                     </button>
 
-                    <div class="form-footer" style="margin-top:20px;">
+                    <div class="form-footer" class="mt-20">
                         <button type="button" class="link-btn" id="resendCodeBtn">
                             <i class="fas fa-sync-alt"></i> Resend Code (if using email/SMS backup)
                         </button>

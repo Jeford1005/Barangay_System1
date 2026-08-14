@@ -6,3 +6,6 @@ cj.txt
 deltest.php
 php_debug.log
 .mt/
+tmptest/
+
+.env*

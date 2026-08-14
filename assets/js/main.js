@@ -740,4 +740,35 @@
         return false;
     };
 
+    // ============================================================
+    // Off-canvas sidebar drawer (tablet/mobile)
+    // ============================================================
+    function initDrawer() {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('drawerBackdrop');
+        const hamburger = document.getElementById('hamburgerBtn');
+        if (!sidebar || !backdrop) return;
+
+        function open() {
+            sidebar.classList.add('open');
+            backdrop.classList.add('open');
+            document.body.classList.add('drawer-open');
+        }
+        function close() {
+            sidebar.classList.remove('open');
+            backdrop.classList.remove('open');
+            document.body.classList.remove('drawer-open');
+        }
+
+        if (hamburger) hamburger.addEventListener('click', open);
+        backdrop.addEventListener('click', close);
+        sidebar.querySelectorAll('a').forEach(function(a) {
+            a.addEventListener('click', close);
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') close();
+        });
+    }
+    initDrawer();
+
 })();

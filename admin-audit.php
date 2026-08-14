@@ -41,185 +41,100 @@ $sidebar = [
     <link rel="shortcut icon" type="image/png" href="assets/img/Brgy_Bidduang.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audit Logs - Barangay Bidduang Portal</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
     <style>
         .audit-filters {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 1.5rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-card);
+            padding: 1.25rem 1.5rem;
             margin-bottom: 1.5rem;
-            border: 1px solid #e9ecef;
-        }
-        .audit-filters .row {
             display: flex;
             flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 0.75rem;
+            gap: 14px;
+            align-items: flex-end;
         }
-        .audit-filters .row:last-child {
-            margin-bottom: 0;
-        }
-        .audit-filters .col {
-            flex: 1;
-            min-width: 180px;
-        }
-        .audit-filters label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 0.25rem;
-        }
-        .audit-filters input,
-        .audit-filters select {
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-        .audit-filters button {
-            min-width: 120px;
-        }
-        .severity-badge {
-            padding: 0.2rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .severity-INFO { background: #cce5ff; color: #004085; }
-        .severity-WARN { background: #fff3cd; color: #856404; }
-        .severity-CRITICAL { background: #f8d7da; color: #721c24; }
-        .action-badge {
-            padding: 0.2rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .action-CREATE { background: #d4edda; color: #155724; }
-        .action-READ { background: #d1ecf1; color: #0c5460; }
-        .action-UPDATE { background: #fff3cd; color: #856404; }
-        .action-DELETE { background: #f8d7da; color: #721c24; }
-        .action-EXPORT { background: #e2d9f3; color: #4b0f7a; }
-        .action-AUTH { background: #f5c6f0; color: #66107a; }
-        .audit-desc {
-            margin-top: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #1a3c28;
-            line-height: 1.3;
-        }
-        .json-cell {
-            font-family: 'Courier New', monospace;
-            font-size: 0.8rem;
-            max-width: 300px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-        .json-cell:hover {
-            background: #f1f1f1;
-            white-space: pre-wrap;
-            overflow-x: auto;
-        }
-        .json-diff-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 9999;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-        .json-diff-modal .content {
-            background: #fff;
-            border-radius: 8px;
-            padding: 1.5rem;
-            max-width: 800px;
-            margin: 0 auto;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            white-space: pre-wrap;
-            overflow-x: auto;
-        }
-        .json-diff-modal .close-btn {
-            position: absolute;
-            top: 1rem;
-            right: 1.5rem;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #fff;
-        }
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: 1.5rem;
-        }
+        .audit-filters .form-group { margin: 0; min-width: 180px; flex: 1; }
+        .audit-filters label { font-size: 12px; color: var(--muted); margin-bottom: 4px; display: block; }
+        .audit-filters .form-control { width: 100%; }
+        .audit-filters .filter-actions { display: flex; gap: 8px; }
+        .pagination { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 1rem; }
         .pagination button,
         .pagination .page-link {
-            padding: 0.5rem 1rem;
-            border: 1px solid #ddd;
-            background: #fff;
-            border-radius: 4px;
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: var(--radius-input);
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 13px;
+            color: var(--ink);
         }
         .pagination button:hover,
-        .pagination .page-link:hover {
-            background: #f0f0f0;
-        }
+        .pagination .page-link:hover { border-color: var(--amber-500); }
         .pagination .current-page {
-            background: #1a5c38;
-            color: #fff;
-            border-color: #1a5c38;
+            background: var(--amber-500);
+            color: #2a1c00;
+            border-color: var(--amber-500);
         }
-        .table-responsive {
-            overflow-x: auto;
-        }
-        .audit-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-        }
+        .table-responsive { overflow-x: auto; }
+        .audit-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         .audit-table th {
-            background: #1a5c38;
+            background: var(--graphite-950);
             color: #fff;
-            padding: 0.75rem;
+            padding: 0.7rem 0.75rem;
             text-align: left;
             font-weight: 600;
             white-space: nowrap;
+            position: sticky;
+            top: 0;
         }
         .audit-table td {
             padding: 0.6rem 0.75rem;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid var(--border);
             vertical-align: top;
         }
-        .audit-table tr:hover {
-            background: #f8f9fa;
-        }
+        .audit-table tr:hover { background: var(--surface-2); }
         .audit-table th:first-child,
-        .audit-table td:first-child {
-            width: 50px;
+        .audit-table td:first-child { width: 50px; }
+        .audit-table th:nth-child(2), .audit-table td:nth-child(2) { width: 150px; }
+        .audit-table th:nth-child(3), .audit-table td:nth-child(3) { width: 110px; }
+        .audit-table th:nth-child(5), .audit-table td:nth-child(5) { width: 130px; }
+        .audit-table th:nth-child(6), .audit-table td:nth-child(6) { width: 80px; }
+        .audit-table th:nth-child(7), .audit-table td:nth-child(7),
+        .audit-table th:nth-child(8), .audit-table td:nth-child(8) {
+            max-width: 240px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-        .loading-row td {
-            text-align: center;
-            padding: 3rem;
-            color: #999;
-        }
+        .audit-table td:nth-child(7):hover, .audit-table td:nth-child(8):hover { white-space: normal; overflow: visible; }
+        .audit-table th:nth-child(9), .audit-table td:nth-child(9) { width: 130px; }
+        .audit-table th:nth-child(10), .audit-table td:nth-child(10) { width: 90px; }
+        .loading-row td { text-align: center; padding: 3rem; color: var(--muted); }
+        .severity-badge { display: inline-block; padding: 3px 10px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 600; }
+        .severity-INFO { background: var(--neutral-bg); color: var(--neutral-fg); }
+        .severity-LOW { background: var(--neutral-bg); color: var(--neutral-fg); }
+        .severity-MEDIUM { background: var(--warning-bg); color: var(--warning-fg); }
+        .severity-HIGH { background: var(--danger-bg); color: var(--danger-fg); }
+        .severity-CRITICAL { background: var(--danger-bg); color: var(--danger-fg); }
+        .action-badge { display: inline-block; padding: 2px 9px; border-radius: var(--radius-pill); font-size: 11px; font-weight: 600; text-transform: capitalize; }
+        .action-create { background: var(--success-bg); color: var(--success-fg); }
+        .action-update { background: var(--warning-bg); color: var(--warning-fg); }
+        .action-delete { background: var(--danger-bg); color: var(--danger-fg); }
+        .action-login { background: var(--info-bg); color: var(--info-fg); }
+        .audit-desc { font-size: 11px; color: var(--muted); margin-top: 3px; }
     </style>
 </head>
 <body>
 <div class="app">
     <!-- Sidebar -->
     <?php include __DIR__ . '/views/sidebar.php'; ?>
+        
 
     <!-- Main Content -->
     <main class="main-content">
+        <?php $variant = 'admin'; include __DIR__ . '/views/mobile-topbar.php'; ?>
         <!-- Header -->
         <div class="page-header">
             <div>

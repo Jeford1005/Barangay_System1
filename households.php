@@ -100,14 +100,16 @@ $currentUser = current_user();
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Households - Barangay Bidduang Portal</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
 </head>
 <body>
 <div class="app">
     <?php include __DIR__ . '/views/sidebar.php'; ?>
+        
 
     <main class="main-content">
+        <?php $variant = 'admin'; include __DIR__ . '/views/mobile-topbar.php'; ?>
         <div class="page-header">
             <div>
                 <h1><i class="fas fa-house"></i> Household Management</h1>
@@ -146,11 +148,11 @@ $currentUser = current_user();
             <div class="card-header">
                 <h2>Household Records</h2>
                 <div class="toolbar">
-                    <form method="GET" class="search-box" style="flex:1;min-width:220px;">
+                    <form method="GET" class="search-box" class="flex-1">
                         <i class="fas fa-search"></i>
                         <input type="text" name="search" placeholder="Search households..." value="<?= esc($search) ?>">
                     </form>
-                    <button class="btn btn-primary" onclick="openModal('householdModal')"><i class="fas fa-plus"></i> Add Household</button>
+                    <button class="btn btn-create" onclick="openModal('householdModal')"><i class="fas fa-plus"></i> Add Household</button>
                 </div>
             </div>
 
@@ -173,7 +175,7 @@ $currentUser = current_user();
                                 <td><?= esc($h['house_type'] ?: '-') ?></td>
                                 <td>
                                     <div class="actions">
-                                        <button class="btn btn-sm btn-info" onclick="editHousehold(<?= $h['id'] ?>)"><i class="fas fa-pen-to-square"></i></button>
+                                        <button class="btn btn-sm btn-update" onclick="editHousehold(<?= $h['id'] ?>)"><i class="fas fa-pen-to-square"></i></button>
                                         <button class="btn btn-sm btn-danger" onclick="deleteHousehold(<?= $h['id'] ?>, '<?= esc(addslashes($h['household_number'])) ?>')"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </td>
@@ -231,14 +233,14 @@ $currentUser = current_user();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('householdModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Household</button>
+                <button type="submit" class="btn btn-create"><i class="fas fa-save"></i> Save Household</button>
             </div>
         </form>
     </div>
 </div>
 
 <div class="modal-backdrop" id="deleteModal">
-    <div class="modal" style="max-width:450px;">
+    <div class="modal" class="max-450">
         <div class="modal-header">
             <h3><i class="fas fa-warning" style="color:var(--danger);"></i> Confirm Delete</h3>
             <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>

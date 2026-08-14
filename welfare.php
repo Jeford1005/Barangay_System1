@@ -95,14 +95,16 @@ $beneficiaries = $pdo->query("
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welfare - Barangay Bidduang Portal</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
 </head>
 <body>
 <div class="app">
     <?php include __DIR__ . '/views/sidebar.php'; ?>
+        
 
     <main class="main-content">
+        <?php $variant = 'admin'; include __DIR__ . '/views/mobile-topbar.php'; ?>
         <div class="page-header">
             <div>
                 <h1><i class="fas fa-hand-holding-heart"></i> Welfare & Assistance</h1>
@@ -145,7 +147,7 @@ $beneficiaries = $pdo->query("
         <div class="card">
             <div class="card-header">
                 <h2><i class="fas fa-project-diagram"></i> Assistance Programs</h2>
-                <button class="btn btn-primary" onclick="openModal('programModal')"><i class="fas fa-plus"></i> Add Program</button>
+                <button class="btn btn-create" onclick="openModal('programModal')"><i class="fas fa-plus"></i> Add Program</button>
             </div>
             <div class="table-responsive">
                 <table>
@@ -165,7 +167,7 @@ $beneficiaries = $pdo->query("
                                 <td><span class="badge badge-<?= $p['status']=='Ongoing'?'success':($p['status']=='Completed'?'secondary':'warning') ?>"><?= esc($p['status']) ?></span></td>
                                 <td>
                                     <div class="actions">
-                                        <button class="btn btn-sm btn-info" onclick="editProgram(<?= $p['id'] ?>)"><i class="fas fa-pen-to-square"></i></button>
+                                        <button class="btn btn-sm btn-update" onclick="editProgram(<?= $p['id'] ?>)"><i class="fas fa-pen-to-square"></i></button>
                                         <form method="POST" style="display:inline;" data-confirm-title="Delete Program" data-confirm-msg="Delete program '<?= esc(addslashes($p['program_name'])) ?>'? This cannot be undone." onsubmit="return handleDelete(this);">
                                             <input type="hidden" name="csrf_token" value="<?= generate_csrf_token() ?>">
                                             <input type="hidden" name="action" value="delete_program">
@@ -186,7 +188,7 @@ $beneficiaries = $pdo->query("
         <div class="card">
             <div class="card-header">
                 <h2><i class="fas fa-users"></i> Beneficiaries</h2>
-                <button class="btn btn-primary" onclick="openModal('beneficiaryModal')"><i class="fas fa-plus"></i> Enroll Resident</button>
+                <button class="btn btn-create" onclick="openModal('beneficiaryModal')"><i class="fas fa-plus"></i> Enroll Resident</button>
             </div>
             <div class="table-responsive">
                 <table>
@@ -238,7 +240,7 @@ $beneficiaries = $pdo->query("
                 <div class="form-group"><label for="programName">Program Name *</label> <input type="text" name="program_name" id="programName" class="form-control" required></div>
                 <div class="form-group"><label for="programDesc">Description</label> <textarea name="description" id="programDesc" class="form-control" rows="3"></textarea></div>
                 <div class="form-group"><label for="beneficiaryType">Beneficiary Type</label> <input type="text" name="beneficiary_type" id="beneficiaryType" class="form-control" placeholder="e.g., Senior Citizens, PWD, Indigent"></div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="grid-2">
                     <div class="form-group"><label for="startDate">Start Date</label> <input type="date" name="start_date" id="startDate" class="form-control"></div>
                     <div class="form-group"><label for="endDate">End Date</label> <input type="date" name="end_date" id="endDate" class="form-control"></div>
                 </div>
@@ -250,7 +252,7 @@ $beneficiaries = $pdo->query("
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('programModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Program</button>
+                <button type="submit" class="btn btn-create"><i class="fas fa-save"></i> Save Program</button>
             </div>
         </form>
     </div>
@@ -290,7 +292,7 @@ $beneficiaries = $pdo->query("
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('beneficiaryModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enroll</button>
+                <button type="submit" class="btn btn-create"><i class="fas fa-save"></i> Enroll</button>
             </div>
         </form>
     </div>

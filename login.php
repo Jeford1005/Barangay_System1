@@ -185,17 +185,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <title>Sign In - Barangay Bidduang</title>
     <link rel="shortcut icon" type="image/png" href="assets/img/Brgy_Bidduang.png">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
-    <link rel="stylesheet" href="assets/css/login.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
     <style>
         .auth-container { min-height: 100vh; display: flex; }
         .auth-left, .auth-right { display: flex; flex-direction: column; }
         .form-group input, .password-wrapper input, .form-group select { min-height: 52px; }
         .btn-submit, .btn-outline, .role-btn { min-height: 52px; }
-        @media (max-width: 1024px) {
-            html, body { overflow: auto !important; height: auto !important; }
-            .auth-container { display: block; min-height: 100vh; }
-            .auth-left, .auth-right { height: auto; display: block; }
+        @media (max-width: 1024px) and (min-width: 768px) {
+            .auth-container { flex-direction: column; }
+            .auth-left { min-height: 220px; padding: 28px; }
+            .auth-right { padding: 32px 20px; }
         }
     </style>
 </head>

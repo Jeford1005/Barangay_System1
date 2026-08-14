@@ -131,14 +131,16 @@ $currentUser = current_user();
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documents - Barangay Bidduang Portal</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
 </head>
 <body>
 <div class="app">
     <?php include __DIR__ . '/views/sidebar.php'; ?>
+        
 
     <main class="main-content">
+        <?php $variant = 'admin'; include __DIR__ . '/views/mobile-topbar.php'; ?>
         <div class="page-header">
             <div>
                 <h1><i class="fas fa-file-text"></i> Document Processing</h1>
@@ -185,12 +187,12 @@ $currentUser = current_user();
             <div class="card-header">
                 <h2>Document Requests</h2>
                 <div class="toolbar">
-                    <form method="GET" class="search-box" style="flex:1;min-width:220px;">
+                    <form method="GET" class="search-box" class="flex-1">
                         <input type="hidden" name="status" value="<?= esc($statusFilter) ?>">
                         <i class="fas fa-search"></i>
                         <input type="text" name="search" placeholder="Search requests..." value="<?= esc($search) ?>">
                     </form>
-                    <select class="form-control" style="width:auto;min-width:150px;" onchange="window.location.href='?status='+this.value+'&search=<?= urlencode($search) ?>'">
+                    <select class="form-control" class="w-auto" onchange="window.location.href='?status='+this.value+'&search=<?= urlencode($search) ?>'">
                         <option value="">All Status</option>
                         <option value="Pending" <?= $statusFilter==='Pending'?'selected':'' ?>>Pending</option>
                         <option value="Processing" <?= $statusFilter==='Processing'?'selected':'' ?>>Processing</option>
@@ -198,8 +200,8 @@ $currentUser = current_user();
                         <option value="Released" <?= $statusFilter==='Released'?'selected':'' ?>>Released</option>
                         <option value="Cancelled" <?= $statusFilter==='Cancelled'?'selected':'' ?>>Cancelled</option>
                     </select>
-                    <button class="btn btn-primary" onclick="openModal('requestModal')"><i class="fas fa-plus"></i> New Request</button>
-                    <button class="btn btn-success" onclick="openModal('orModal')"><i class="fas fa-receipt"></i> Issue OR</button>
+                    <button class="btn btn-create" onclick="openModal('requestModal')"><i class="fas fa-plus"></i> New Request</button>
+                    <button class="btn btn-read" onclick="openModal('orModal')"><i class="fas fa-receipt"></i> Issue OR</button>
                 </div>
             </div>
 
@@ -239,7 +241,7 @@ $currentUser = current_user();
                                                 </select>
                                             </form>
                                         <?php endif; ?>
-                                        <button class="btn btn-sm btn-info" onclick="previewDocument(<?= $r['id'] ?>)"><i class="fas fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-update" onclick="previewDocument(<?= $r['id'] ?>)"><i class="fas fa-eye"></i></button>
                                         <button class="btn btn-sm btn-danger" onclick="deleteRequest(<?= $r['id'] ?>)"><i class="fas fa-trash"></i></button>
                                     </div>
                                 </td>
@@ -293,7 +295,7 @@ $currentUser = current_user();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('requestModal')">Cancel</button>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Submit Request</button>
+                <button type="submit" class="btn btn-create"><i class="fas fa-save"></i> Submit Request</button>
             </div>
         </form>
     </div>
@@ -345,7 +347,7 @@ $currentUser = current_user();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeModal('orModal')">Cancel</button>
-                <button type="submit" class="btn btn-success"><i class="fas fa-receipt"></i> Issue Receipt</button>
+                <button type="submit" class="btn btn-ghost"><i class="fas fa-receipt"></i> Issue Receipt</button>
             </div>
         </form>
     </div>
@@ -353,7 +355,7 @@ $currentUser = current_user();
 
 <!-- Delete Modal -->
 <div class="modal-backdrop" id="deleteModal">
-    <div class="modal" style="max-width:450px;">
+    <div class="modal" class="max-450">
         <div class="modal-header">
             <h3><i class="fas fa-warning" style="color:var(--danger);"></i> Confirm Delete</h3>
             <button class="modal-close" onclick="closeModal('deleteModal')">&times;</button>
@@ -453,7 +455,7 @@ $province = 'Nueva Ecija';
     </div>
 
     <div class="no-print">
-        <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print Document</button>
+        <button class="btn btn-read" onclick="window.print()"><i class="fas fa-print"></i> Print Document</button>
         <button class="btn btn-outline" onclick="window.close()">Close</button>
     </div>
 </body>

@@ -206,14 +206,16 @@ $csrf = generate_csrf_token();
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Residents - Barangay Bidduang Portal</title>
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?= ASSET_VERSION ?>">
+    <link rel="stylesheet" href="assets/css/design-system.css?v=<?= ASSET_VERSION ?>">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
 </head>
 <body>
     <div class="app">
     <?php include __DIR__ . '/views/sidebar.php'; ?>
+        
 
     <main class="main-content">
+        <?php $variant = 'admin'; include __DIR__ . '/views/mobile-topbar.php'; ?>
         <?php if ($message): ?>
             <div class="toast-alert toast-success" id="floatingAlert">
                 <i class="fas fa-circle-check"></i>
@@ -266,7 +268,7 @@ $csrf = generate_csrf_token();
             <div class="card-title" style="justify-content:space-between; flex-wrap:wrap; gap:12px;">
                 <span>Resident Records</span>
                 <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                    <form method="GET" class="search-box" style="flex:1;min-width:220px;">
+                    <form method="GET" class="search-box" class="flex-1">
                         <input type="hidden" name="status" value="<?= esc($statusFilter) ?>">
                         <i class="fas fa-search"></i>
                         <input type="text" name="search" placeholder="Search by name or contact..." value="<?= esc($search) ?>">
@@ -283,7 +285,7 @@ $csrf = generate_csrf_token();
                             <option value="indigent" <?= $statusFilter==='indigent'?'selected':'' ?>>🤝 Indigent</option>
                         </select>
                     </div>
-                    <button class="btn btn-primary" onclick="openModal('addModal')"><i class="fas fa-plus"></i> Add Resident</button>
+                    <button class="btn btn-create" onclick="openModal('addModal')"><i class="fas fa-plus"></i> Add Resident</button>
                 </div>
             </div>
 
@@ -291,6 +293,7 @@ $csrf = generate_csrf_token();
                 <table>
                     <thead>
                         <tr>
+                            <th class="col-check"><input type="checkbox" id="selectAllRes"></th>
                             <th>Name</th>
                             <th>Gender</th>
                             <th>Birth Date</th>
@@ -332,7 +335,7 @@ $csrf = generate_csrf_token();
                                         <?php endif; ?>
                                     </td>
                                     <td class="actions">
-                                        <button class="btn btn-secondary" onclick="openEditModal(
+                                        <button class="btn btn-update" onclick="openEditModal(
                                             <?= (int)$r['id'] ?>,
                                             '<?= esc(addslashes($r['first_name'])) ?>',
                                             '<?= esc(addslashes($r['last_name'])) ?>',
@@ -363,13 +366,14 @@ $csrf = generate_csrf_token();
     </main>
     </div>
 
-    <div id="addModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center;">
-        <div style="background:#fff; padding:20px; border-radius:12px; width:90%; max-width:600px; max-height:90vh; overflow-y:auto;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                <h2>Add Resident</h2>
-                <button onclick="closeModal('addModal')" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+    <div id="addModal" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> Add Resident</h3>
+                <button type="button" class="modal-close" onclick="closeModal('addModal')">&times;</button>
             </div>
             <form method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
                 <input type="hidden" name="action" value="add">
                 <input type="hidden" name="csrf_token" value="<?= esc($csrf) ?>">
                 <div class="form-group">
@@ -422,19 +426,24 @@ $csrf = generate_csrf_token();
                         <option>Moved Out</option>
                     </select>
                 </div>
-                <button class="btn btn-primary" type="submit" style="width:100%;"><i class="fas fa-save"></i> Save</button>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('addModal')">Cancel</button>
+                <button class="btn btn-update" type="submit"><i class="fas fa-save"></i> Save</button>
+                </div>
             </form>
         </div>
     </div>
 
 
-    <div id="editModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center;">
-        <div style="background:#fff; padding:20px; border-radius:12px; width:90%; max-width:600px; max-height:90vh; overflow-y:auto;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                <h2>Edit Resident</h2>
-                <button onclick="closeModal('editModal')" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+    <div id="editModal" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-edit"></i> Edit Resident</h3>
+                <button type="button" class="modal-close" onclick="closeModal('editModal')">&times;</button>
             </div>
             <form method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="id" id="editId">
                 <input type="hidden" name="csrf_token" value="<?= esc($csrf) ?>">
@@ -485,18 +494,24 @@ $csrf = generate_csrf_token();
                         <option>Moved Out</option>
                     </select>
                 </div>
-                <button class="btn btn-primary" type="submit" style="width:100%;"><i class="fas fa-save"></i> Update</button>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal('editModal')">Cancel</button>
+                <button class="btn btn-update" type="submit"><i class="fas fa-save"></i> Update</button>
+                </div>
             </form>
         </div>
     </div>
 
     <script>
-    function openModal(id) { 
-        document.getElementById(id).style.display = 'flex'; 
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+        document.body.style.overflow = 'hidden';
     }
 
-    function closeModal(id) { 
-        document.getElementById(id).style.display = 'none'; 
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+        document.body.style.overflow = '';
     }
 
     function openEditModal(id, first, last, birthDate, gender, purokId, contact, status, isSenior, isPwd, isIndigent, fourps) {
